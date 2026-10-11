@@ -3,6 +3,10 @@
 # dependencies
 node_modules/
 
+# packaged upload
+Word-Up-App.zip
+*.zip
+
 # Expo
 .expo/
 dist/
