@@ -61,7 +61,9 @@ export default function GrowthScreen({ onBack }: GrowthScreenProps) {
 
   const toggleSelfCare = (item: string) => {
     setSelfCare((old) =>
-      old.includes(item) ? old.filter((x) => x !== item) : [...old, item]
+      old.includes(item)
+        ? old.filter((value) => value !== item)
+        : [...old, item]
     );
   };
 
