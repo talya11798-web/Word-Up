@@ -2,281 +2,456 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
-  StyleSheet,
+  TextInput,
+  ScrollView,
   SafeAreaView,
+  StyleSheet,
 } from "react-native";
-import { colors } from "../theme";
-
-type Tab = "Home" | "My Life" | "Diary" | "My Cycle" | "More" | "Settings";
-
-const tabs: Exclude<Tab, "Settings">[] = [
-  "Home",
-  "My Life",
-  "Diary",
-  "My Cycle",
-  "More",
-];
 
 type MainShellProps = {
   onSignOut?: () => void;
 };
 
-export default function MainShell({ onSignOut }: MainShellProps) {
-  const [page, setPage] = useState<Tab>("Home");
+const TOP_TABS = ["Home", "My Life", "Diary", "My Cycle", "More"] as const;
 
-  const renderCard = (title: string, subtitle: string, icon: string) => (
-    <View style={styles.card}>
-      <Text style={styles.cardIcon}>{icon}</Text>
-      <Text style={styles.cardTitle}>{title}</Text>
-      <Text style={styles.subtitle}>{subtitle}</Text>
-    </View>
+const PRIMARY_PAGES = new Set([
+  "Home",
+  "My Life",
+  "Diary",
+  "My Cycle",
+  "Beauty",
+  "School",
+  "My Growth",
+  "Profile",
+  "Settings",
+  "More",
+]);
+
+export default function MainShell({ onSignOut }: MainShellProps) {
+  const [page, setPage] = useState("Home");
+  const [name] = useState("Gorgeous");
+  const [tasks, setTasks] = useState(["Finish homework", "Plan tomorrow"]);
+  const [newTask, setNewTask] = useState("");
+
+  const button = (label: string, next: string) => (
+    <TouchableOpacity style={styles.button} onPress={() => setPage(next)}>
+      <Text style={styles.buttonText}>{label}</Text>
+    </TouchableOpacity>
   );
+
+  const card = (title: string, description: string, next: string) => (
+    <TouchableOpacity style={styles.card} onPress={() => setPage(next)}>
+      <Text style={styles.cardTitle}>{title}</Text>
+      <Text style={styles.description}>{description}</Text>
+      <Text style={styles.open}>EXPLORE →</Text>
+    </TouchableOpacity>
+  );
+
+  const addTask = () => {
+    if (!newTask.trim()) return;
+    setTasks([...tasks, newTask.trim()]);
+    setNewTask("");
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <View style={styles.header}>
         <Text style={styles.logo}>HER ERA</Text>
-        <Text style={styles.tagline}>YOUR LIFE. YOUR SPACE. YOUR ERA.</Text>
+        <TouchableOpacity onPress={() => setPage("Settings")}>
+          <Text style={styles.gear}>⚙</Text>
+        </TouchableOpacity>
+      </View>
 
-        <Text style={styles.greeting}>Welcome to your era ✨</Text>
-        <Text style={styles.date}>Your space, your pace.</Text>
-
+      <ScrollView contentContainerStyle={styles.content}>
         {page === "Home" && (
           <>
-            <View style={styles.hero}>
-              <Text style={styles.heroTitle}>Hello, Gorgeous!</Text>
-              <Text style={styles.subtitle}>
-                Make today a day to remember.
+            <Text style={styles.date}>YOUR NEW BEGINNING ✨</Text>
+            <Text style={styles.heading}>Hey, {name} ♡</Text>
+            <Text style={styles.description}>Welcome back to your space.</Text>
+
+            <View style={styles.affirmation}>
+              <Text style={styles.cardTitle}>TODAY&apos;S AFFIRMATION ✨</Text>
+              <Text style={styles.quote}>
+                I am becoming the best version of myself.
               </Text>
             </View>
 
-            <Text style={styles.heading}>Your Dashboard</Text>
+            <Text style={styles.section}>YOUR SPACE</Text>
 
             <View style={styles.grid}>
-              {renderCard("My Life", "Plan your day", "📅")}
-              {renderCard("The Diary", "Your private space", "📖")}
-              {renderCard("My Cycle", "Your cycle calendar", "💜")}
-              {renderCard("Beauty", "Your inspiration", "✨")}
-              {renderCard("School", "Stay organized", "📚")}
-              {renderCard("My Growth", "Goals and habits", "🌷")}
+              {(
+                [
+                  ["My Planner", "Plan your day", "My Life"],
+                  ["My Diary", "Write your thoughts", "Diary"],
+                  ["My Cycle", "Your cycle calendar", "My Cycle"],
+                  ["Beauty", "Your beauty boards", "Beauty"],
+                  ["School", "Stay organized", "School"],
+                  ["My Growth", "Goals and habits", "My Growth"],
+                ] as const
+              ).map(([title, desc, next]) => (
+                <TouchableOpacity
+                  key={title}
+                  style={styles.gridCard}
+                  onPress={() => setPage(next)}
+                >
+                  <Text style={styles.gridTitle}>{title}</Text>
+                  <Text style={styles.gridDescription}>{desc}</Text>
+                  <Text style={styles.open}>OPEN →</Text>
+                </TouchableOpacity>
+              ))}
             </View>
 
-            <Text style={styles.heading}>Today&apos;s Reminder</Text>
-            {renderCard(
-              "A little reminder",
-              "You are growing at your own pace.",
-              "🌸"
-            )}
+            <Text style={styles.section}>TODAY&apos;S TO-DO LIST</Text>
+            <View style={styles.card}>
+              {tasks.map((task, index) => (
+                <Text key={`${task}-${index}`} style={styles.task}>
+                  ♡  {task}
+                </Text>
+              ))}
+              <TextInput
+                style={styles.input}
+                placeholder="Add a task..."
+                placeholderTextColor="#B2A8BF"
+                value={newTask}
+                onChangeText={setNewTask}
+                onSubmitEditing={addTask}
+              />
+              <TouchableOpacity onPress={addTask}>
+                <Text style={styles.add}>+ ADD TASK</Text>
+              </TouchableOpacity>
+            </View>
           </>
         )}
 
         {page === "My Life" && (
           <>
-            <Text style={styles.heading}>My Life 📅</Text>
-            {renderCard("Daily Planner", "Organize your day", "📝")}
-            {renderCard("My Routines", "Morning and night routines", "☀️")}
-            {renderCard("My Goals", "Keep track of your goals", "🎯")}
+            <Text style={styles.heading}>My Life ♡</Text>
+            {card("Daily Planner", "Organize your day.", "Planner")}
+            {card("Calendar", "Keep track of important dates.", "Calendar")}
+            {card("Reminders", "Remember what matters.", "Reminders")}
+            {card("My Goals", "Make your plans happen.", "Goals")}
+            {card("Routines", "Create your daily routines.", "Routines")}
           </>
         )}
 
         {page === "Diary" && (
           <>
-            <Text style={styles.heading}>The Diary 📖</Text>
-            {renderCard("My Journal", "Write your thoughts", "🖊️")}
-            {renderCard("Mood Check-in", "How are you feeling?", "💗")}
-            {renderCard("Gratitude", "Things you're thankful for", "🌷")}
+            <Text style={styles.heading}>My Diary 📖</Text>
+            {card("Journal Entries", "Write about your day.", "Journal")}
+            {card(
+              "Gratitude Journal",
+              "Write what you're thankful for.",
+              "Gratitude"
+            )}
+            {card("Mood Tracker", "Check in with yourself.", "Mood")}
+            {card("Memory Box", "Keep special memories.", "Memories")}
+            {card(
+              "Journal Prompts",
+              "Find something to write about.",
+              "Prompts"
+            )}
           </>
         )}
 
         {page === "My Cycle" && (
           <>
-            <Text style={styles.heading}>My Cycle 💜</Text>
-            {renderCard("Cycle Calendar", "Keep track of your dates", "🗓️")}
-            {renderCard("Cycle History", "Review previous cycles", "📊")}
-            {renderCard("Symptoms", "Record how you're feeling", "💜")}
-            <Text style={styles.subtitle}>
-              Cycle predictions are estimates, not guarantees.
+            <Text style={styles.heading}>My Cycle 🌷</Text>
+            {card(
+              "Cycle Calendar",
+              "Record your period dates.",
+              "Cycle Calendar"
+            )}
+            {card(
+              "Period Log",
+              "Record your start and end dates.",
+              "Period Log"
+            )}
+            {card("Symptoms", "Keep notes about how you feel.", "Symptoms")}
+            {card(
+              "Cycle History",
+              "Review your previous entries.",
+              "Cycle History"
+            )}
+            <Text style={styles.description}>
+              Cycle estimates are not medical predictions. Teen cycles can be
+              irregular.
             </Text>
+          </>
+        )}
+
+        {page === "Beauty" && (
+          <>
+            <Text style={styles.heading}>Beauty & Style 💅</Text>
+            <Text style={styles.description}>
+              Your looks, your inspiration, your era.
+            </Text>
+            <View style={styles.affirmation}>
+              <Text style={styles.cardTitle}>MY BEAUTY SPACE ✨</Text>
+              <Text style={styles.quote}>Create your own style story.</Text>
+            </View>
+            {card(
+              "💅 Nail Inspiration",
+              "Save nail sets, colors and designs.",
+              "Nails"
+            )}
+            {card(
+              "💇‍♀️ Hairstyle Board",
+              "Collect braid, ponytail and hairstyle ideas.",
+              "Hair"
+            )}
+            {card(
+              "👗 Outfit Planner",
+              "Plan outfits and save combinations.",
+              "Outfits"
+            )}
+            {card(
+              "💄 Makeup Inspiration",
+              "Keep your favorite makeup looks.",
+              "Makeup"
+            )}
+            {card(
+              "🛍️ Beauty Wishlist",
+              "Keep a list of things you like.",
+              "Wishlist"
+            )}
+            {card(
+              "🎀 Saved Looks",
+              "Keep all your favorite looks together.",
+              "Saved Looks"
+            )}
+          </>
+        )}
+
+        {page === "School" && (
+          <>
+            <Text style={styles.heading}>School 📚</Text>
+            {card("Homework Tracker", "Keep up with assignments.", "Homework")}
+            {card("Study Planner", "Organize your study sessions.", "Study")}
+            {card("Subjects", "Keep your classes organized.", "Subjects")}
+            {card("Flashcards", "Review what you're learning.", "Flashcards")}
+            {card("Test Reminders", "Remember upcoming tests.", "Tests")}
+          </>
+        )}
+
+        {page === "My Growth" && (
+          <>
+            <Text style={styles.heading}>My Growth 🌱</Text>
+            {card("Habit Tracker", "Build habits at your own pace.", "Habits")}
+            {card(
+              "Personal Goals",
+              "Set goals that matter to you.",
+              "Growth Goals"
+            )}
+            {card("Self-Care", "Make time for yourself.", "Self-Care")}
+            {card(
+              "Faith & Bible Study",
+              "Keep your Bible study notes.",
+              "Faith"
+            )}
+            {card(
+              "Monthly Reflection",
+              "Look back on your growth.",
+              "Reflection"
+            )}
           </>
         )}
 
         {page === "More" && (
           <>
             <Text style={styles.heading}>Explore Her Era</Text>
-            {renderCard("Beauty", "Hair, nails and outfits", "✨")}
-            {renderCard("School", "Your academic planner", "📚")}
-            {renderCard("My Growth", "Personal goals and faith", "🌷")}
-            <TouchableOpacity
-              style={styles.settings}
-              onPress={() => setPage("Settings")}
-            >
-              <Text style={styles.settingsText}>⚙️ Settings & Account</Text>
-            </TouchableOpacity>
+            {card("Beauty & Style", "Nails, hair, outfits and makeup.", "Beauty")}
+            {card("School", "Homework, study and subjects.", "School")}
+            {card("My Growth", "Habits, goals and faith.", "My Growth")}
+            {card("My Profile", "Your Her Era profile.", "Profile")}
+            {card("Settings", "Account, privacy and appearance.", "Settings")}
+          </>
+        )}
+
+        {page === "Profile" && (
+          <>
+            <Text style={styles.heading}>My Profile ♡</Text>
+            <View style={styles.affirmation}>
+              <Text style={styles.cardTitle}>YOUR HER ERA PROFILE</Text>
+              <Text style={styles.description}>Welcome, {name}!</Text>
+            </View>
+            {button("EDIT PROFILE", "Edit Profile")}
+            {button("SETTINGS", "Settings")}
           </>
         )}
 
         {page === "Settings" && (
           <>
-            <Text style={styles.heading}>Settings ⚙️</Text>
-            {renderCard("Sign In / Sign Up", "Manage your account", "👤")}
-            {renderCard("Face ID / Touch ID", "Biometric security options", "🔐")}
-            {renderCard("App PIN", "Protect your private space", "🔒")}
-            {renderCard(
-              "Appearance",
-              "Lavender, silver and dark mode",
-              "🎨"
+            <Text style={styles.heading}>Settings ⚙</Text>
+            {card("Account", "Manage your account.", "Account")}
+            {card(
+              "Face ID / Touch ID",
+              "Biometric unlock options.",
+              "Security"
             )}
-            {renderCard("Privacy", "Manage your information", "🛡️")}
+            {card("App PIN", "Extra privacy options.", "Security")}
+            {card("Appearance", "Choose your app theme.", "Appearance")}
+            {card("Privacy & Security", "Your privacy matters.", "Privacy")}
             {onSignOut && (
-              <TouchableOpacity style={styles.settings} onPress={onSignOut}>
-                <Text style={styles.settingsText}>Sign Out</Text>
+              <TouchableOpacity style={styles.button} onPress={onSignOut}>
+                <Text style={styles.buttonText}>SIGN OUT</Text>
               </TouchableOpacity>
             )}
-            <TouchableOpacity
-              style={styles.settings}
-              onPress={() => setPage("More")}
-            >
-              <Text style={styles.settingsText}>Back to More</Text>
-            </TouchableOpacity>
+            {button("BACK TO MORE", "More")}
+          </>
+        )}
+
+        {!PRIMARY_PAGES.has(page) && (
+          <>
+            <Text style={styles.heading}>{page}</Text>
+            <View style={styles.affirmation}>
+              <Text style={styles.cardTitle}>COMING SOON ♡</Text>
+              <Text style={styles.description}>
+                This feature will get its own interactive screen next.
+              </Text>
+            </View>
+            {button("BACK TO HOME", "Home")}
           </>
         )}
       </ScrollView>
 
-      <View style={styles.navigation}>
-        {tabs.map((tab) => (
-          <TouchableOpacity
-            key={tab}
-            onPress={() => setPage(tab)}
-            style={styles.navItem}
-          >
-            <Text
-              style={[styles.navText, page === tab && styles.activeNav]}
-            >
-              {tab}
-            </Text>
-          </TouchableOpacity>
-        ))}
+      <View style={styles.nav}>
+        {TOP_TABS.map((tab) => {
+          const isActive =
+            page === tab ||
+            (tab === "More" &&
+              [
+                "More",
+                "Beauty",
+                "School",
+                "My Growth",
+                "Profile",
+                "Settings",
+              ].includes(page));
+          return (
+            <TouchableOpacity key={tab} onPress={() => setPage(tab)}>
+              <Text style={[styles.navText, isActive && styles.active]}>
+                {tab}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.softBg,
-  },
-  content: {
-    padding: 22,
-    paddingBottom: 35,
+  container: { flex: 1, backgroundColor: "#F9F6FC" },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 20,
   },
   logo: {
-    fontSize: 32,
-    fontWeight: "900",
-    color: colors.dark,
-    textAlign: "center",
-    letterSpacing: 5,
-    marginTop: 15,
-  },
-  tagline: {
-    color: colors.tagline,
-    fontSize: 10,
-    textAlign: "center",
-    letterSpacing: 2,
-    marginTop: 7,
-  },
-  greeting: {
     fontSize: 25,
-    fontWeight: "bold",
-    color: colors.dark,
-    marginTop: 35,
+    fontWeight: "900",
+    color: "#59476F",
+    letterSpacing: 5,
   },
+  gear: { fontSize: 24, color: "#77618F" },
+  content: { padding: 18, paddingBottom: 35 },
   date: {
-    color: colors.greetingMuted,
-    marginTop: 6,
-  },
-  hero: {
-    backgroundColor: colors.hero,
-    padding: 25,
-    borderRadius: 25,
-    marginTop: 25,
-    marginBottom: 25,
-  },
-  heroTitle: {
-    fontSize: 23,
-    fontWeight: "bold",
-    color: colors.dark,
+    color: "#A58AC8",
+    fontSize: 10,
+    letterSpacing: 2,
+    marginBottom: 12,
   },
   heading: {
-    fontSize: 21,
-    fontWeight: "bold",
-    color: colors.dark,
+    fontSize: 27,
+    fontWeight: "900",
+    color: "#59476F",
+    marginBottom: 10,
+  },
+  description: {
+    color: "#897F94",
+    fontSize: 13,
+    lineHeight: 21,
+    marginVertical: 7,
+  },
+  affirmation: {
+    backgroundColor: "#E8DDF5",
+    padding: 20,
+    borderRadius: 22,
+    marginVertical: 15,
+  },
+  cardTitle: { color: "#59476F", fontSize: 16, fontWeight: "900" },
+  quote: {
+    color: "#59476F",
+    fontSize: 19,
+    fontWeight: "700",
+    marginTop: 10,
+    lineHeight: 27,
+  },
+  section: {
+    color: "#8F7AA8",
+    fontSize: 11,
+    fontWeight: "900",
+    letterSpacing: 2,
     marginTop: 22,
-    marginBottom: 15,
+    marginBottom: 8,
   },
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 12,
+    justifyContent: "space-between",
   },
+  gridCard: {
+    backgroundColor: "#FFFFFF",
+    width: "48%",
+    padding: 16,
+    borderRadius: 19,
+    marginVertical: 6,
+    borderWidth: 1,
+    borderColor: "#E9E1F3",
+  },
+  gridTitle: { color: "#59476F", fontWeight: "900", fontSize: 15 },
+  gridDescription: { color: "#897F94", fontSize: 11, marginTop: 7 },
   card: {
-    backgroundColor: colors.card,
-    borderRadius: 20,
+    backgroundColor: "#FFFFFF",
     padding: 19,
-    marginBottom: 12,
-    flexGrow: 1,
-    flexBasis: "45%",
-    minHeight: 125,
-    shadowColor: colors.shadow,
-    shadowOpacity: 0.09,
-    shadowRadius: 8,
-    elevation: 3,
+    borderRadius: 19,
+    marginVertical: 7,
+    borderWidth: 1,
+    borderColor: "#E9E1F3",
   },
-  cardIcon: {
-    fontSize: 25,
-    marginBottom: 10,
+  open: {
+    color: "#A58AC8",
+    fontSize: 10,
+    fontWeight: "900",
+    marginTop: 10,
   },
-  cardTitle: {
-    fontSize: 15,
-    fontWeight: "bold",
-    color: colors.dark,
+  task: { color: "#59476F", paddingVertical: 8, fontSize: 14 },
+  input: {
+    backgroundColor: "#F9F6FC",
+    padding: 13,
+    borderRadius: 12,
+    marginTop: 12,
+    color: "#59476F",
   },
-  subtitle: {
-    fontSize: 12,
-    color: colors.muted,
-    marginTop: 7,
+  add: { color: "#9275B6", fontWeight: "900", marginTop: 13 },
+  button: {
+    backgroundColor: "#B59AD8",
+    padding: 17,
+    borderRadius: 16,
+    marginVertical: 7,
+    alignItems: "center",
   },
-  navigation: {
+  buttonText: { color: "#FFFFFF", fontWeight: "900", letterSpacing: 1 },
+  nav: {
     flexDirection: "row",
     justifyContent: "space-around",
-    backgroundColor: colors.card,
-    paddingVertical: 17,
+    padding: 14,
+    backgroundColor: "#FFFFFF",
     borderTopWidth: 1,
-    borderTopColor: colors.navBorder,
+    borderColor: "#E9E1F3",
   },
-  navItem: {
-    alignItems: "center",
-    paddingHorizontal: 3,
-  },
-  navText: {
-    fontSize: 11,
-    color: colors.navIdle,
-  },
-  activeNav: {
-    color: colors.navActive,
-    fontWeight: "bold",
-  },
-  settings: {
-    backgroundColor: colors.settings,
-    padding: 19,
-    borderRadius: 18,
-    marginTop: 12,
-  },
-  settingsText: {
-    color: colors.dark,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
+  navText: { color: "#A69AB8", fontSize: 10, fontWeight: "700" },
+  active: { color: "#59476F", fontWeight: "900" },
 });
