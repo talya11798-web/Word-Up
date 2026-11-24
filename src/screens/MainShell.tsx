@@ -13,6 +13,7 @@ import DiaryScreen from "./DiaryScreen";
 import MyCycleScreen from "./MyCycleScreen";
 import MyLifeScreen from "./MyLifeScreen";
 import GrowthScreen from "./GrowthScreen";
+import ProfileSettingsScreen from "./ProfileSettingsScreen";
 import SchoolScreen from "./SchoolScreen";
 
 type MainShellProps = {
@@ -120,9 +121,33 @@ const PRIMARY_PAGES = new Set([
   "Faith",
   "Reflection",
   "Profile",
+  "Edit Profile",
   "Settings",
+  "Account",
+  "Appearance",
+  "Security",
+  "Privacy",
   "More",
 ]);
+
+const SETTINGS_PAGE_BY_ROUTE: Record<
+  string,
+  | "Profile"
+  | "Settings"
+  | "Edit Profile"
+  | "Account"
+  | "Appearance"
+  | "Security"
+  | "Privacy"
+> = {
+  Profile: "Profile",
+  "Edit Profile": "Edit Profile",
+  Settings: "Settings",
+  Account: "Account",
+  Appearance: "Appearance",
+  Security: "Security",
+  Privacy: "Privacy",
+};
 
 const SCHOOL_PAGES = new Set([
   "School",
@@ -174,6 +199,7 @@ export default function MainShell({ onSignOut }: MainShellProps) {
   const isCyclePage = page in CYCLE_PAGE_BY_ROUTE;
   const isSchoolPage = SCHOOL_PAGES.has(page);
   const isGrowthPage = GROWTH_PAGES.has(page);
+  const isSettingsPage = page in SETTINGS_PAGE_BY_ROUTE;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -208,6 +234,13 @@ export default function MainShell({ onSignOut }: MainShellProps) {
         <SchoolScreen key={page} onBack={() => setPage("More")} />
       ) : isGrowthPage ? (
         <GrowthScreen key={page} onBack={() => setPage("More")} />
+      ) : isSettingsPage ? (
+        <ProfileSettingsScreen
+          key={page}
+          initialPage={SETTINGS_PAGE_BY_ROUTE[page]}
+          onBack={() => setPage("More")}
+          onSignOut={onSignOut}
+        />
       ) : (
         <>
       <View style={styles.header}>
@@ -289,39 +322,6 @@ export default function MainShell({ onSignOut }: MainShellProps) {
           </>
         )}
 
-        {page === "Profile" && (
-          <>
-            <Text style={styles.heading}>My Profile ♡</Text>
-            <View style={styles.affirmation}>
-              <Text style={styles.cardTitle}>YOUR HER ERA PROFILE</Text>
-              <Text style={styles.description}>Welcome, {name}!</Text>
-            </View>
-            {button("EDIT PROFILE", "Edit Profile")}
-            {button("SETTINGS", "Settings")}
-          </>
-        )}
-
-        {page === "Settings" && (
-          <>
-            <Text style={styles.heading}>Settings ⚙</Text>
-            {card("Account", "Manage your account.", "Account")}
-            {card(
-              "Face ID / Touch ID",
-              "Biometric unlock options.",
-              "Security"
-            )}
-            {card("App PIN", "Extra privacy options.", "Security")}
-            {card("Appearance", "Choose your app theme.", "Appearance")}
-            {card("Privacy & Security", "Your privacy matters.", "Privacy")}
-            {onSignOut && (
-              <TouchableOpacity style={styles.button} onPress={onSignOut}>
-                <Text style={styles.buttonText}>SIGN OUT</Text>
-              </TouchableOpacity>
-            )}
-            {button("BACK TO MORE", "More")}
-          </>
-        )}
-
         {!PRIMARY_PAGES.has(page) && (
           <>
             <Text style={styles.heading}>{page}</Text>
@@ -347,11 +347,10 @@ export default function MainShell({ onSignOut }: MainShellProps) {
             (tab === "My Cycle" && isCyclePage) ||
             (tab === "More" &&
               (page === "More" ||
-                page === "Profile" ||
-                page === "Settings" ||
                 isBeautyPage ||
                 isSchoolPage ||
-                isGrowthPage));
+                isGrowthPage ||
+                isSettingsPage));
           const label = tab === "My Cycle" ? "🌷 Cycle" : tab;
           return (
             <TouchableOpacity key={tab} onPress={() => setPage(tab)}>
