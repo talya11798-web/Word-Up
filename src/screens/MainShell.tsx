@@ -12,6 +12,7 @@ import BeautyScreen from "./BeautyScreen";
 import DiaryScreen from "./DiaryScreen";
 import MyCycleScreen from "./MyCycleScreen";
 import MyLifeScreen from "./MyLifeScreen";
+import GrowthScreen from "./GrowthScreen";
 import SchoolScreen from "./SchoolScreen";
 
 type MainShellProps = {
@@ -113,6 +114,11 @@ const PRIMARY_PAGES = new Set([
   "Flashcards",
   "Tests",
   "My Growth",
+  "Habits",
+  "Growth Goals",
+  "Self-Care",
+  "Faith",
+  "Reflection",
   "Profile",
   "Settings",
   "More",
@@ -125,6 +131,15 @@ const SCHOOL_PAGES = new Set([
   "Subjects",
   "Flashcards",
   "Tests",
+]);
+
+const GROWTH_PAGES = new Set([
+  "My Growth",
+  "Habits",
+  "Growth Goals",
+  "Self-Care",
+  "Faith",
+  "Reflection",
 ]);
 
 export default function MainShell({ onSignOut }: MainShellProps) {
@@ -158,6 +173,7 @@ export default function MainShell({ onSignOut }: MainShellProps) {
   const isDiaryPage = page in DIARY_PAGE_BY_ROUTE;
   const isCyclePage = page in CYCLE_PAGE_BY_ROUTE;
   const isSchoolPage = SCHOOL_PAGES.has(page);
+  const isGrowthPage = GROWTH_PAGES.has(page);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -189,6 +205,8 @@ export default function MainShell({ onSignOut }: MainShellProps) {
         />
       ) : isSchoolPage ? (
         <SchoolScreen key={page} onBack={() => setPage("More")} />
+      ) : isGrowthPage ? (
+        <GrowthScreen key={page} onBack={() => setPage("More")} />
       ) : (
         <>
       <View style={styles.header}>
@@ -256,29 +274,6 @@ export default function MainShell({ onSignOut }: MainShellProps) {
                 <Text style={styles.add}>+ ADD TASK</Text>
               </TouchableOpacity>
             </View>
-          </>
-        )}
-
-        {page === "My Growth" && (
-          <>
-            <Text style={styles.heading}>My Growth 🌱</Text>
-            {card("Habit Tracker", "Build habits at your own pace.", "Habits")}
-            {card(
-              "Personal Goals",
-              "Set goals that matter to you.",
-              "Growth Goals"
-            )}
-            {card("Self-Care", "Make time for yourself.", "Self-Care")}
-            {card(
-              "Faith & Bible Study",
-              "Keep your Bible study notes.",
-              "Faith"
-            )}
-            {card(
-              "Monthly Reflection",
-              "Look back on your growth.",
-              "Reflection"
-            )}
           </>
         )}
 
@@ -351,11 +346,11 @@ export default function MainShell({ onSignOut }: MainShellProps) {
             (tab === "My Cycle" && isCyclePage) ||
             (tab === "More" &&
               (page === "More" ||
-                page === "My Growth" ||
                 page === "Profile" ||
                 page === "Settings" ||
                 isBeautyPage ||
-                isSchoolPage));
+                isSchoolPage ||
+                isGrowthPage));
           const label = tab === "My Cycle" ? "🌷 Cycle" : tab;
           return (
             <TouchableOpacity key={tab} onPress={() => setPage(tab)}>
