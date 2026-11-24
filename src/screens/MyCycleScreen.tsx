@@ -79,33 +79,22 @@ export default function MyCycleScreen({
     };
   }, [periodStart, cycleLength, periodLength]);
 
-  const savePeriodLog = () => {
+  const savePeriod = () => {
     if (!periodStart.trim()) {
-      Alert.alert("Add a start date", "Enter when your period started.");
+      Alert.alert("Add a date", "Enter the first day of your period.");
       return;
     }
 
-    const start = new Date(periodStart);
-    if (Number.isNaN(start.getTime())) {
-      Alert.alert(
-        "Check the date",
-        "Use a date like 2026-11-23 or November 23, 2026."
-      );
-      return;
-    }
-
-    const label = `${periodStart.trim()} · ${periodLength || "5"} day period · ${
-      cycleLength || "28"
-    } day cycle${cycleNotes.trim() ? ` · ${cycleNotes.trim()}` : ""}`;
-
-    setCycleHistory((old) => [label, ...old]);
-    Alert.alert("Saved ♡", "Added to your cycle history.");
+    setCycleHistory((old) => [periodStart.trim(), ...old]);
+    Alert.alert("Period saved ♡", "Your cycle entry has been recorded.");
     setPage("Cycle History");
   };
 
-  const toggleSymptom = (item: string) => {
+  const toggleSymptom = (symptom: string) => {
     setSymptoms((old) =>
-      old.includes(item) ? old.filter((x) => x !== item) : [...old, item]
+      old.includes(symptom)
+        ? old.filter((item) => item !== symptom)
+        : [...old, symptom]
     );
   };
 
@@ -301,8 +290,8 @@ export default function MyCycleScreen({
                 placeholderTextColor="#A89BB3"
               />
 
-              <TouchableOpacity style={styles.addButton} onPress={savePeriodLog}>
-                <Text style={styles.addText}>Save to Cycle History ♡</Text>
+              <TouchableOpacity style={styles.addButton} onPress={savePeriod}>
+                <Text style={styles.addText}>Save Period ♡</Text>
               </TouchableOpacity>
             </View>
           </View>
