@@ -6,7 +6,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
 } from "react-native";
 
 const P = "#A98BD4";
@@ -35,18 +34,20 @@ export default function SchoolScreen({ onBack }: SchoolScreenProps) {
   const [studyNotes, setStudyNotes] = useState("");
 
   const addSchoolTask = () => {
-    if (!schoolInput.trim()) {
-      Alert.alert("Add something first", "Type a school task before adding.");
-      return;
-    }
-    const label = `${schoolSubject}: ${schoolInput.trim()}`;
-    setSchoolTasks((old) => [...old, label]);
+    if (!schoolInput.trim()) return;
+
+    setSchoolTasks((old) => [
+      `${schoolSubject}: ${schoolInput.trim()}`,
+      ...old,
+    ]);
     setSchoolInput("");
   };
 
-  const toggleComplete = (task: string) => {
+  const toggleSchoolTask = (task: string) => {
     setSchoolCompleted((old) =>
-      old.includes(task) ? old.filter((item) => item !== task) : [...old, task]
+      old.includes(task)
+        ? old.filter((item) => item !== task)
+        : [...old, task]
     );
   };
 
@@ -132,7 +133,7 @@ export default function SchoolScreen({ onBack }: SchoolScreenProps) {
               <TouchableOpacity
                 key={`${task}-${index}`}
                 style={styles.listItem}
-                onPress={() => toggleComplete(task)}
+                onPress={() => toggleSchoolTask(task)}
               >
                 <Text style={styles.listItemText}>
                   {schoolCompleted.includes(task) ? "☑ " : "☐ "}
