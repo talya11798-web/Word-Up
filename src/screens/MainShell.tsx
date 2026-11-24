@@ -356,10 +356,11 @@ export default function MainShell({ onSignOut }: MainShellProps) {
                 "Profile",
                 "Settings",
               ].includes(page));
+          const label = tab === "My Cycle" ? "🌷 Cycle" : tab;
           return (
             <TouchableOpacity key={tab} onPress={() => setPage(tab)}>
-              <Text style={[styles.navText, isActive && styles.active]}>
-                {tab}
+              <Text style={[styles.navText, isActive && styles.navActive]}>
+                {label}
               </Text>
             </TouchableOpacity>
           );
@@ -482,4 +483,5 @@ const styles = StyleSheet.create({
   },
   navText: { color: "#A69AB8", fontSize: 10, fontWeight: "700" },
   active: { color: "#59476F", fontWeight: "900" },
+  navActive: { color: "#A98BD4", fontWeight: "900" },
 });
