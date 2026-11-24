@@ -24,11 +24,13 @@ type LifePage =
 
 type MyLifeScreenProps = {
   onBack?: () => void;
+  onOpenCycle?: () => void;
   initialPage?: LifePage;
 };
 
 export default function MyLifeScreen({
   onBack,
+  onOpenCycle,
   initialPage = "My Life",
 }: MyLifeScreenProps) {
   const [page, setPage] = useState<LifePage>(initialPage);
@@ -209,6 +211,22 @@ export default function MyLifeScreen({
                 <Text style={styles.arrow}>›</Text>
               </TouchableOpacity>
             ))}
+
+            {onOpenCycle && (
+              <TouchableOpacity
+                style={styles.menuCard}
+                onPress={onOpenCycle}
+              >
+                <Text style={styles.menuEmoji}>🌷</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.menuTitle}>My Cycle</Text>
+                  <Text style={styles.menuDescription}>
+                    Your personal cycle tracker
+                  </Text>
+                </View>
+                <Text style={styles.arrow}>›</Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
 
