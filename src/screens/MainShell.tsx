@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import BeautyScreen from "./BeautyScreen";
 import DiaryScreen from "./DiaryScreen";
+import MyCycleScreen from "./MyCycleScreen";
 import MyLifeScreen from "./MyLifeScreen";
 
 type MainShellProps = {
@@ -64,6 +65,17 @@ const DIARY_PAGE_BY_ROUTE: Record<
   Notes: "Notes",
 };
 
+const CYCLE_PAGE_BY_ROUTE: Record<
+  string,
+  "My Cycle" | "Cycle Calendar" | "Period Log" | "Symptoms" | "Cycle History"
+> = {
+  "My Cycle": "My Cycle",
+  "Cycle Calendar": "Cycle Calendar",
+  "Period Log": "Period Log",
+  Symptoms: "Symptoms",
+  "Cycle History": "Cycle History",
+};
+
 const PRIMARY_PAGES = new Set([
   "Home",
   "My Life",
@@ -82,6 +94,10 @@ const PRIMARY_PAGES = new Set([
   "Prompts",
   "Notes",
   "My Cycle",
+  "Cycle Calendar",
+  "Period Log",
+  "Symptoms",
+  "Cycle History",
   "Beauty",
   "Nails",
   "Hair",
@@ -125,6 +141,7 @@ export default function MainShell({ onSignOut }: MainShellProps) {
   const isBeautyPage = page in BEAUTY_CATEGORY_BY_PAGE;
   const isLifePage = page in LIFE_PAGE_BY_ROUTE;
   const isDiaryPage = page in DIARY_PAGE_BY_ROUTE;
+  const isCyclePage = page in CYCLE_PAGE_BY_ROUTE;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -144,6 +161,12 @@ export default function MainShell({ onSignOut }: MainShellProps) {
         <DiaryScreen
           key={page}
           initialPage={DIARY_PAGE_BY_ROUTE[page]}
+          onBack={() => setPage("Home")}
+        />
+      ) : isCyclePage ? (
+        <MyCycleScreen
+          key={page}
+          initialPage={CYCLE_PAGE_BY_ROUTE[page]}
           onBack={() => setPage("Home")}
         />
       ) : (
@@ -213,32 +236,6 @@ export default function MainShell({ onSignOut }: MainShellProps) {
                 <Text style={styles.add}>+ ADD TASK</Text>
               </TouchableOpacity>
             </View>
-          </>
-        )}
-
-        {page === "My Cycle" && (
-          <>
-            <Text style={styles.heading}>My Cycle 🌷</Text>
-            {card(
-              "Cycle Calendar",
-              "Record your period dates.",
-              "Cycle Calendar"
-            )}
-            {card(
-              "Period Log",
-              "Record your start and end dates.",
-              "Period Log"
-            )}
-            {card("Symptoms", "Keep notes about how you feel.", "Symptoms")}
-            {card(
-              "Cycle History",
-              "Review your previous entries.",
-              "Cycle History"
-            )}
-            <Text style={styles.description}>
-              Cycle estimates are not medical predictions. Teen cycles can be
-              irregular.
-            </Text>
           </>
         )}
 
@@ -342,6 +339,7 @@ export default function MainShell({ onSignOut }: MainShellProps) {
             page === tab ||
             (tab === "My Life" && isLifePage) ||
             (tab === "Diary" && isDiaryPage) ||
+            (tab === "My Cycle" && isCyclePage) ||
             (tab === "More" &&
               [
                 "More",
