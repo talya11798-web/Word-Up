@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  Switch,
 } from "react-native";
 
 const P = "#A98BD4";
@@ -15,9 +14,14 @@ const BG = "#F8F4FC";
 const DARK = "#423451";
 const WHITE = "#FFFFFF";
 
-const THEMES = ["Lavender", "Silver", "Soft Pink", "Dark Mode"];
-
-type SettingsPage = "Profile" | "Settings" | "Edit Profile" | "Account" | "Appearance" | "Security" | "Privacy";
+type SettingsPage =
+  | "Profile"
+  | "Settings"
+  | "Edit Profile"
+  | "Account"
+  | "Appearance"
+  | "Security"
+  | "Privacy";
 
 type ProfileSettingsScreenProps = {
   onBack?: () => void;
@@ -40,24 +44,9 @@ export default function ProfileSettingsScreen({
   const [appPin, setAppPin] = useState("");
   const [showPin, setShowPin] = useState(false);
 
-  const displayName = profileName.trim() || "Gorgeous";
-
   const saveProfile = () => {
     Alert.alert("Profile saved ♡", "Your Her Era profile has been updated.");
     setPage("Profile");
-  };
-
-  const savePin = () => {
-    if (appPin && appPin.length < 4) {
-      Alert.alert("PIN too short", "Use at least 4 digits.");
-      return;
-    }
-    Alert.alert(
-      appPin ? "PIN saved ♡" : "PIN cleared",
-      appPin
-        ? "Your app PIN is set on this device for now."
-        : "App PIN protection is off."
-    );
   };
 
   return (
@@ -69,23 +58,26 @@ export default function ProfileSettingsScreen({
 
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
-          {(page === "Profile" || page === "Settings") && onBack && (
-            <TouchableOpacity onPress={onBack}>
-              <Text style={styles.back}>‹ Back</Text>
-            </TouchableOpacity>
-          )}
-
-          {page !== "Profile" && page !== "Settings" && (
+          {onBack && (
             <TouchableOpacity
-              onPress={() =>
-                setPage(
-                  page === "Edit Profile" ? "Profile" : "Settings"
-                )
-              }
+              onPress={() => {
+                if (page === "Edit Profile") {
+                  setPage("Profile");
+                  return;
+                }
+                if (
+                  page === "Account" ||
+                  page === "Appearance" ||
+                  page === "Security" ||
+                  page === "Privacy"
+                ) {
+                  setPage("Settings");
+                  return;
+                }
+                onBack();
+              }}
             >
-              <Text style={styles.back}>
-                ‹ Back to {page === "Edit Profile" ? "Profile" : "Settings"}
-              </Text>
+              <Text style={styles.back}>‹ Back</Text>
             </TouchableOpacity>
           )}
 
@@ -168,203 +160,106 @@ export default function ProfileSettingsScreen({
             </>
           )}
 
-          {page === "Settings" && (
+          {(page === "Settings" ||
+            page === "Account" ||
+            page === "Appearance" ||
+            page === "Security" ||
+            page === "Privacy") && (
             <>
-              <Text style={styles.sectionTitle}>SETTINGS ⚙</Text>
-              <View style={styles.welcomeCard}>
-                <Text style={styles.welcomeTitle}>Your space, your rules.</Text>
-                <Text style={styles.description}>
-                  Manage appearance, privacy, and account options.
-                </Text>
-              </View>
+              <Text style={styles.sectionTitle}>SETTINGS ⚙️</Text>
 
-              <TouchableOpacity
-                style={styles.menuCard}
-                onPress={() => setPage("Account")}
-              >
-                <Text style={styles.menuEmoji}>👤</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.menuTitle}>Account</Text>
-                  <Text style={styles.menuDescription}>
-                    Profile and sign-out options
-                  </Text>
-                </View>
-                <Text style={styles.arrow}>›</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.menuCard}
-                onPress={() => setPage("Appearance")}
-              >
-                <Text style={styles.menuEmoji}>🎨</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.menuTitle}>Appearance</Text>
-                  <Text style={styles.menuDescription}>
-                    Theme: {appTheme}
-                  </Text>
-                </View>
-                <Text style={styles.arrow}>›</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.menuCard}
-                onPress={() => setPage("Security")}
-              >
-                <Text style={styles.menuEmoji}>🔐</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.menuTitle}>Face ID / App PIN</Text>
-                  <Text style={styles.menuDescription}>
-                    Protect your private space
-                  </Text>
-                </View>
-                <Text style={styles.arrow}>›</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.menuCard}
-                onPress={() => setPage("Privacy")}
-              >
-                <Text style={styles.menuEmoji}>🛡️</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.menuTitle}>Privacy & Notifications</Text>
-                  <Text style={styles.menuDescription}>
-                    Manage your information
-                  </Text>
-                </View>
-                <Text style={styles.arrow}>›</Text>
-              </TouchableOpacity>
-            </>
-          )}
-
-          {page === "Account" && (
-            <>
-              <Text style={styles.sectionTitle}>ACCOUNT</Text>
               <View style={styles.card}>
-                <Text style={styles.cardTitle}>Signed in as</Text>
-                <Text style={styles.listItemText}>{displayName}</Text>
-                <Text style={styles.description}>
-                  Secure account sync is coming soon. For now, your profile
-                  stays on this device.
-                </Text>
-                <TouchableOpacity
-                  style={styles.addButton}
-                  onPress={() => setPage("Edit Profile")}
-                >
-                  <Text style={styles.addText}>Edit Profile</Text>
-                </TouchableOpacity>
-                {onSignOut && (
-                  <TouchableOpacity
-                    style={[styles.addButton, styles.secondaryButton]}
-                    onPress={onSignOut}
-                  >
-                    <Text style={[styles.addText, styles.secondaryText]}>
-                      Sign Out
-                    </Text>
-                  </TouchableOpacity>
+                <Text style={styles.cardTitle}>Appearance</Text>
+                {["Lavender", "Soft Pink", "Cream", "Dark Mode"].map(
+                  (theme) => (
+                    <TouchableOpacity
+                      key={theme}
+                      style={styles.listItem}
+                      onPress={() => setAppTheme(theme)}
+                    >
+                      <Text style={styles.listItemText}>
+                        {appTheme === theme ? "☑ " : "○ "}
+                        {theme}
+                      </Text>
+                    </TouchableOpacity>
+                  )
                 )}
               </View>
-            </>
-          )}
 
-          {page === "Appearance" && (
-            <>
-              <Text style={styles.sectionTitle}>APPEARANCE</Text>
               <View style={styles.card}>
-                <Text style={styles.cardTitle}>Choose your theme</Text>
-                {THEMES.map((theme) => (
-                  <TouchableOpacity
-                    key={theme}
-                    style={[
-                      styles.listItem,
-                      appTheme === theme && styles.selectedItem,
-                    ]}
-                    onPress={() => setAppTheme(theme)}
-                  >
-                    <Text style={styles.listItemText}>
-                      {appTheme === theme ? "☑ " : "☐ "}
-                      {theme}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-                <Text style={styles.description}>
-                  Theme preference is saved here. Full color packs come next.
-                </Text>
-              </View>
-            </>
-          )}
-
-          {page === "Security" && (
-            <>
-              <Text style={styles.sectionTitle}>SECURITY</Text>
-              <View style={styles.card}>
-                <View style={styles.switchRow}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.cardTitle}>Face ID / Touch ID</Text>
-                    <Text style={styles.description}>
-                      Biometric unlock option for this device.
-                    </Text>
-                  </View>
-                  <Switch
-                    value={faceIdEnabled}
-                    onValueChange={setFaceIdEnabled}
-                    trackColor={{ false: "#DDD3E7", true: "#C9B4E8" }}
-                    thumbColor={faceIdEnabled ? P : "#f4f3f4"}
-                  />
-                </View>
-
-                <Text style={[styles.cardTitle, { marginTop: 18 }]}>
-                  App PIN
-                </Text>
-                <View style={styles.pinRow}>
-                  <TextInput
-                    style={[styles.input, { flex: 1, marginTop: 0 }]}
-                    value={appPin}
-                    onChangeText={setAppPin}
-                    placeholder="Create a PIN"
-                    placeholderTextColor="#A89BB3"
-                    keyboardType="number-pad"
-                    secureTextEntry={!showPin}
-                    maxLength={8}
-                  />
-                  <TouchableOpacity
-                    style={styles.showButton}
-                    onPress={() => setShowPin((old) => !old)}
-                  >
-                    <Text style={styles.showText}>
-                      {showPin ? "HIDE" : "SHOW"}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                <TouchableOpacity style={styles.addButton} onPress={savePin}>
-                  <Text style={styles.addText}>Save PIN</Text>
+                <Text style={styles.cardTitle}>Notifications</Text>
+                <TouchableOpacity
+                  style={styles.listItem}
+                  onPress={() => setNotificationsEnabled((old) => !old)}
+                >
+                  <Text style={styles.listItemText}>
+                    {notificationsEnabled
+                      ? "🔔 Notifications On"
+                      : "🔕 Notifications Off"}
+                  </Text>
                 </TouchableOpacity>
               </View>
-            </>
-          )}
 
-          {page === "Privacy" && (
-            <>
-              <Text style={styles.sectionTitle}>PRIVACY</Text>
               <View style={styles.card}>
-                <View style={styles.switchRow}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.cardTitle}>Notifications</Text>
-                    <Text style={styles.description}>
-                      Gentle reminders and check-ins.
-                    </Text>
-                  </View>
-                  <Switch
-                    value={notificationsEnabled}
-                    onValueChange={setNotificationsEnabled}
-                    trackColor={{ false: "#DDD3E7", true: "#C9B4E8" }}
-                    thumbColor={notificationsEnabled ? P : "#f4f3f4"}
-                  />
-                </View>
-                <Text style={[styles.description, { marginTop: 16 }]}>
-                  Your diary, cycle, and notes are private. Cloud backup and
-                  account sync will stay optional when they arrive.
+                <Text style={styles.cardTitle}>Privacy & Security</Text>
+
+                <TouchableOpacity
+                  style={styles.listItem}
+                  onPress={() => setFaceIdEnabled((old) => !old)}
+                >
+                  <Text style={styles.listItemText}>
+                    {faceIdEnabled ? "☑" : "☐"} Face ID preference
+                  </Text>
+                </TouchableOpacity>
+
+                <Text style={styles.description}>
+                  Face ID is a planned feature. This switch does not activate
+                  Apple&apos;s biometric authentication yet.
+                </Text>
+
+                <Text style={[styles.cardTitle, { marginTop: 14 }]}>
+                  App PIN (prototype only)
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  value={appPin}
+                  onChangeText={setAppPin}
+                  keyboardType="number-pad"
+                  secureTextEntry={!showPin}
+                  maxLength={6}
+                  placeholder="Create a PIN"
+                  placeholderTextColor="#A89BB3"
+                />
+
+                <TouchableOpacity onPress={() => setShowPin((old) => !old)}>
+                  <Text style={styles.description}>
+                    {showPin ? "Hide PIN" : "Show PIN"}
+                  </Text>
+                </TouchableOpacity>
+
+                <Text style={styles.description}>
+                  This PIN is not securely stored or used to lock the app yet.
                 </Text>
               </View>
+
+              <View style={styles.card}>
+                <Text style={styles.cardTitle}>About HER ERA</Text>
+                <Text style={styles.listItemText}>
+                  YOUR LIFE. YOUR SPACE. YOUR ERA.
+                </Text>
+                <Text style={styles.description}>Version 1.0 prototype</Text>
+              </View>
+
+              {onSignOut && (
+                <TouchableOpacity
+                  style={[styles.addButton, styles.secondaryButton]}
+                  onPress={onSignOut}
+                >
+                  <Text style={[styles.addText, styles.secondaryText]}>
+                    Sign Out
+                  </Text>
+                </TouchableOpacity>
+              )}
             </>
           )}
         </View>
