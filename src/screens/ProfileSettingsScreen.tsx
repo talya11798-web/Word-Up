@@ -91,21 +91,38 @@ export default function ProfileSettingsScreen({
 
           {page === "Profile" && (
             <>
-              <Text style={styles.sectionTitle}>MY PROFILE ♡</Text>
+              <Text style={styles.sectionTitle}>MY PROFILE 👤</Text>
+
               <View style={styles.welcomeCard}>
-                <Text style={styles.welcomeTitle}>Hi, {displayName}!</Text>
+                <Text style={styles.welcomeTitle}>Welcome to your era ♡</Text>
                 <Text style={styles.description}>
-                  {profileBio.trim() ||
-                    "This is your Her Era profile — make it feel like you."}
+                  Make this space feel like you.
                 </Text>
               </View>
 
-              <TouchableOpacity
-                style={styles.addButton}
-                onPress={() => setPage("Edit Profile")}
-              >
-                <Text style={styles.addText}>EDIT PROFILE</Text>
-              </TouchableOpacity>
+              <View style={styles.card}>
+                <Text style={styles.cardTitle}>Your name</Text>
+                <TextInput
+                  style={styles.input}
+                  value={profileName}
+                  onChangeText={setProfileName}
+                  placeholder="Enter your name"
+                  placeholderTextColor="#A89BB3"
+                />
+
+                <Text style={[styles.cardTitle, { marginTop: 14 }]}>
+                  Your bio
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  value={profileBio}
+                  onChangeText={setProfileBio}
+                  placeholder="A little about you..."
+                  placeholderTextColor="#A89BB3"
+                />
+
+                <Text style={styles.description}>HER ERA member ♡</Text>
+              </View>
 
               <TouchableOpacity
                 style={[styles.addButton, styles.secondaryButton]}
@@ -127,11 +144,13 @@ export default function ProfileSettingsScreen({
                   style={styles.input}
                   value={profileName}
                   onChangeText={setProfileName}
-                  placeholder="What should we call you?"
+                  placeholder="Enter your name"
                   placeholderTextColor="#A89BB3"
                 />
 
-                <Text style={[styles.cardTitle, { marginTop: 14 }]}>Bio</Text>
+                <Text style={[styles.cardTitle, { marginTop: 14 }]}>
+                  Your bio
+                </Text>
                 <TextInput
                   style={[styles.input, styles.bioInput]}
                   value={profileBio}
