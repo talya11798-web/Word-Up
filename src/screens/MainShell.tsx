@@ -173,6 +173,7 @@ export default function MainShell({ onSignOut }: MainShellProps) {
           initialPage={LIFE_PAGE_BY_ROUTE[page]}
           onBack={() => setPage("Home")}
           onOpenCycle={() => setPage("My Cycle")}
+          onOpenSchool={() => setPage("School")}
         />
       ) : isDiaryPage ? (
         <DiaryScreen
