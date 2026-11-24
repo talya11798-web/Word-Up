@@ -27,6 +27,8 @@ type MyLifeScreenProps = {
   onOpenCycle?: () => void;
   onOpenSchool?: () => void;
   onOpenGrowth?: () => void;
+  onOpenSettings?: () => void;
+  onOpenProfile?: () => void;
   initialPage?: LifePage;
 };
 
@@ -35,6 +37,8 @@ export default function MyLifeScreen({
   onOpenCycle,
   onOpenSchool,
   onOpenGrowth,
+  onOpenSettings,
+  onOpenProfile,
   initialPage = "My Life",
 }: MyLifeScreenProps) {
   const [page, setPage] = useState<LifePage>(initialPage);
@@ -258,6 +262,38 @@ export default function MyLifeScreen({
                   <Text style={styles.menuTitle}>My Growth</Text>
                   <Text style={styles.menuDescription}>
                     Grow at your own pace
+                  </Text>
+                </View>
+                <Text style={styles.arrow}>›</Text>
+              </TouchableOpacity>
+            )}
+
+            {onOpenSettings && (
+              <TouchableOpacity
+                style={styles.menuCard}
+                onPress={onOpenSettings}
+              >
+                <Text style={styles.menuEmoji}>⚙️</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.menuTitle}>Settings</Text>
+                  <Text style={styles.menuDescription}>
+                    Make HER ERA yours
+                  </Text>
+                </View>
+                <Text style={styles.arrow}>›</Text>
+              </TouchableOpacity>
+            )}
+
+            {onOpenProfile && (
+              <TouchableOpacity
+                style={styles.menuCard}
+                onPress={onOpenProfile}
+              >
+                <Text style={styles.menuEmoji}>👤</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.menuTitle}>Profile</Text>
+                  <Text style={styles.menuDescription}>
+                    Your personal space
                   </Text>
                 </View>
                 <Text style={styles.arrow}>›</Text>

@@ -217,6 +217,8 @@ export default function MainShell({ onSignOut }: MainShellProps) {
           onOpenCycle={() => setPage("My Cycle")}
           onOpenSchool={() => setPage("School")}
           onOpenGrowth={() => setPage("My Growth")}
+          onOpenSettings={() => setPage("Settings")}
+          onOpenProfile={() => setPage("Profile")}
         />
       ) : isDiaryPage ? (
         <DiaryScreen
