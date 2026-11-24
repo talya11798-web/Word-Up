@@ -14,14 +14,12 @@ const DARK = "#423451";
 const WHITE = "#FFFFFF";
 
 const SELF_CARE_OPTIONS = [
-  "Journal",
-  "Stretch",
-  "Pray / reflect",
+  "Take a relaxing break",
   "Listen to music",
-  "Go outside",
-  "Rest",
-  "Talk to someone I trust",
-  "Skincare / shower",
+  "Spend time on a hobby",
+  "Tidy my space",
+  "Write in my diary",
+  "Get enough rest",
 ];
 
 type Habit = {
@@ -67,8 +65,6 @@ export default function GrowthScreen({ onBack }: GrowthScreenProps) {
     );
   };
 
-  const habitsDone = habits.filter((habit) => habit.done).length;
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -87,52 +83,42 @@ export default function GrowthScreen({ onBack }: GrowthScreenProps) {
           <Text style={styles.sectionTitle}>MY GROWTH 🌱</Text>
 
           <View style={styles.welcomeCard}>
-            <Text style={styles.welcomeTitle}>Grow at your own pace.</Text>
+            <Text style={styles.welcomeTitle}>
+              Becoming her, one day at a time.
+            </Text>
             <Text style={styles.description}>
-              Set goals, build gentle habits, and make space for self-care.
+              Your goals, habits, faith, and little moments of growth.
             </Text>
           </View>
 
+          <Text style={styles.sectionTitle}>MY GOALS ✨</Text>
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Add a personal goal</Text>
             <TextInput
               style={styles.input}
               value={goalInput}
               onChangeText={setGoalInput}
-              placeholder="Something I want to grow in..."
+              placeholder="What's one goal you have?"
               placeholderTextColor="#A89BB3"
               onSubmitEditing={addGrowthGoal}
             />
+
             <TouchableOpacity style={styles.addButton} onPress={addGrowthGoal}>
               <Text style={styles.addText}>+ Add Goal</Text>
             </TouchableOpacity>
+
+            {growthGoals.map((goal, index) => (
+              <View style={styles.listItem} key={`${goal}-${index}`}>
+                <Text style={styles.listItemText}>🌷 {goal}</Text>
+              </View>
+            ))}
           </View>
 
-          <Text style={styles.sectionTitle}>MY GOALS</Text>
-          {growthGoals.length === 0 ? (
-            <Text style={styles.emptyText}>
-              Your growth goals will bloom here ♡
-            </Text>
-          ) : (
-            growthGoals.map((goal, index) => (
-              <View key={`${goal}-${index}`} style={styles.listItem}>
-                <Text style={styles.listItemText}>🌱 {goal}</Text>
-              </View>
-            ))
-          )}
-
-          <Text style={styles.sectionTitle}>TODAY&apos;S HABITS</Text>
+          <Text style={styles.sectionTitle}>DAILY HABITS</Text>
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>
-              {habitsDone} of {habits.length} done today
-            </Text>
             {habits.map((habit) => (
               <TouchableOpacity
                 key={habit.name}
-                style={[
-                  styles.moodButton,
-                  habit.done && styles.selectedMood,
-                ]}
+                style={styles.listItem}
                 onPress={() => toggleHabit(habit.name)}
               >
                 <Text style={styles.listItemText}>
@@ -141,17 +127,19 @@ export default function GrowthScreen({ onBack }: GrowthScreenProps) {
                 </Text>
               </TouchableOpacity>
             ))}
+
+            <Text style={styles.description}>
+              {habits.filter((h) => h.done).length} of {habits.length} habits
+              completed
+            </Text>
           </View>
 
-          <Text style={styles.sectionTitle}>SELF-CARE CHECK-IN</Text>
+          <Text style={styles.sectionTitle}>SELF-CARE CHECKLIST 🧴</Text>
           <View style={styles.card}>
             {SELF_CARE_OPTIONS.map((item) => (
               <TouchableOpacity
                 key={item}
-                style={[
-                  styles.moodButton,
-                  selfCare.includes(item) && styles.selectedMood,
-                ]}
+                style={styles.listItem}
                 onPress={() => toggleSelfCare(item)}
               >
                 <Text style={styles.listItemText}>
@@ -162,17 +150,31 @@ export default function GrowthScreen({ onBack }: GrowthScreenProps) {
             ))}
           </View>
 
-          <Text style={styles.sectionTitle}>GROWTH NOTES</Text>
+          <Text style={styles.sectionTitle}>FAITH & REFLECTION 🤍</Text>
           <View style={styles.card}>
+            <Text style={styles.cardTitle}>My daily reflection</Text>
             <TextInput
-              style={[styles.input, styles.notesInput]}
+              style={[
+                styles.input,
+                {
+                  height: 130,
+                  textAlignVertical: "top",
+                },
+              ]}
               value={growthNotes}
               onChangeText={setGrowthNotes}
               multiline
-              textAlignVertical="top"
-              placeholder="Reflections, wins, prayers, or reminders..."
+              placeholder="What did I learn today? What am I grateful for?"
               placeholderTextColor="#A89BB3"
             />
+          </View>
+
+          <View style={styles.welcomeCard}>
+            <Text style={styles.welcomeTitle}>A reminder for you ♡</Text>
+            <Text style={styles.description}>
+              You don&apos;t have to have everything figured out. Keep learning,
+              growing, and becoming yourself.
+            </Text>
           </View>
         </View>
       </ScrollView>
@@ -236,7 +238,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 5,
   },
-  notesInput: { height: 140, marginTop: 0 },
   addButton: {
     backgroundColor: P,
     borderRadius: 12,
@@ -246,29 +247,11 @@ const styles = StyleSheet.create({
   },
   addText: { color: WHITE, fontWeight: "800" },
   listItem: {
-    backgroundColor: WHITE,
+    backgroundColor: "#F8F4FC",
     borderRadius: 14,
     padding: 15,
     marginBottom: 9,
-    borderWidth: 1,
-    borderColor: "#E9E1F0",
+    marginTop: 8,
   },
   listItemText: { color: DARK, fontSize: 14, fontWeight: "600" },
-  emptyText: {
-    color: "#968AA1",
-    fontSize: 13,
-    marginVertical: 15,
-    textAlign: "center",
-  },
-  moodButton: {
-    padding: 14,
-    borderRadius: 12,
-    marginBottom: 8,
-    backgroundColor: "#F8F4FC",
-  },
-  selectedMood: {
-    backgroundColor: "#EDE3F7",
-    borderWidth: 1,
-    borderColor: P,
-  },
 });
