@@ -9,6 +9,7 @@ import {
   StyleSheet,
 } from "react-native";
 import BeautyScreen from "./BeautyScreen";
+import DiaryScreen from "./DiaryScreen";
 import MyLifeScreen from "./MyLifeScreen";
 
 type MainShellProps = {
@@ -49,6 +50,20 @@ const LIFE_PAGE_BY_ROUTE: Record<
   Routines: "Routines",
 };
 
+const DIARY_PAGE_BY_ROUTE: Record<
+  string,
+  "Diary" | "New Entry" | "Mood" | "Gratitude" | "Notes"
+> = {
+  Diary: "Diary",
+  Journal: "New Entry",
+  "New Entry": "New Entry",
+  Mood: "Mood",
+  Gratitude: "Gratitude",
+  Memories: "Notes",
+  Prompts: "New Entry",
+  Notes: "Notes",
+};
+
 const PRIMARY_PAGES = new Set([
   "Home",
   "My Life",
@@ -59,6 +74,13 @@ const PRIMARY_PAGES = new Set([
   "Goals",
   "Routines",
   "Diary",
+  "Journal",
+  "New Entry",
+  "Mood",
+  "Gratitude",
+  "Memories",
+  "Prompts",
+  "Notes",
   "My Cycle",
   "Beauty",
   "Nails",
@@ -102,6 +124,7 @@ export default function MainShell({ onSignOut }: MainShellProps) {
 
   const isBeautyPage = page in BEAUTY_CATEGORY_BY_PAGE;
   const isLifePage = page in LIFE_PAGE_BY_ROUTE;
+  const isDiaryPage = page in DIARY_PAGE_BY_ROUTE;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -115,6 +138,12 @@ export default function MainShell({ onSignOut }: MainShellProps) {
         <MyLifeScreen
           key={page}
           initialPage={LIFE_PAGE_BY_ROUTE[page]}
+          onBack={() => setPage("Home")}
+        />
+      ) : isDiaryPage ? (
+        <DiaryScreen
+          key={page}
+          initialPage={DIARY_PAGE_BY_ROUTE[page]}
           onBack={() => setPage("Home")}
         />
       ) : (
@@ -184,25 +213,6 @@ export default function MainShell({ onSignOut }: MainShellProps) {
                 <Text style={styles.add}>+ ADD TASK</Text>
               </TouchableOpacity>
             </View>
-          </>
-        )}
-
-        {page === "Diary" && (
-          <>
-            <Text style={styles.heading}>My Diary 📖</Text>
-            {card("Journal Entries", "Write about your day.", "Journal")}
-            {card(
-              "Gratitude Journal",
-              "Write what you're thankful for.",
-              "Gratitude"
-            )}
-            {card("Mood Tracker", "Check in with yourself.", "Mood")}
-            {card("Memory Box", "Keep special memories.", "Memories")}
-            {card(
-              "Journal Prompts",
-              "Find something to write about.",
-              "Prompts"
-            )}
           </>
         )}
 
@@ -331,6 +341,7 @@ export default function MainShell({ onSignOut }: MainShellProps) {
           const isActive =
             page === tab ||
             (tab === "My Life" && isLifePage) ||
+            (tab === "Diary" && isDiaryPage) ||
             (tab === "More" &&
               [
                 "More",
