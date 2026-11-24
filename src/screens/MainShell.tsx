@@ -9,6 +9,7 @@ import {
   StyleSheet,
 } from "react-native";
 import BeautyScreen from "./BeautyScreen";
+import MyLifeScreen from "./MyLifeScreen";
 
 type MainShellProps = {
   onSignOut?: () => void;
@@ -35,9 +36,28 @@ const BEAUTY_CATEGORY_BY_PAGE: Record<
   Wishlist: "Beauty Wishlist",
 };
 
+const LIFE_PAGE_BY_ROUTE: Record<
+  string,
+  "My Life" | "Calendar" | "To-Do List" | "Reminders" | "Goals" | "Routines"
+> = {
+  "My Life": "My Life",
+  Planner: "To-Do List",
+  "To-Do List": "To-Do List",
+  Calendar: "Calendar",
+  Reminders: "Reminders",
+  Goals: "Goals",
+  Routines: "Routines",
+};
+
 const PRIMARY_PAGES = new Set([
   "Home",
   "My Life",
+  "Planner",
+  "To-Do List",
+  "Calendar",
+  "Reminders",
+  "Goals",
+  "Routines",
   "Diary",
   "My Cycle",
   "Beauty",
@@ -81,6 +101,7 @@ export default function MainShell({ onSignOut }: MainShellProps) {
   };
 
   const isBeautyPage = page in BEAUTY_CATEGORY_BY_PAGE;
+  const isLifePage = page in LIFE_PAGE_BY_ROUTE;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -89,6 +110,12 @@ export default function MainShell({ onSignOut }: MainShellProps) {
           key={page}
           initialCategory={BEAUTY_CATEGORY_BY_PAGE[page]}
           onBack={() => setPage("More")}
+        />
+      ) : isLifePage ? (
+        <MyLifeScreen
+          key={page}
+          initialPage={LIFE_PAGE_BY_ROUTE[page]}
+          onBack={() => setPage("Home")}
         />
       ) : (
         <>
@@ -157,17 +184,6 @@ export default function MainShell({ onSignOut }: MainShellProps) {
                 <Text style={styles.add}>+ ADD TASK</Text>
               </TouchableOpacity>
             </View>
-          </>
-        )}
-
-        {page === "My Life" && (
-          <>
-            <Text style={styles.heading}>My Life ♡</Text>
-            {card("Daily Planner", "Organize your day.", "Planner")}
-            {card("Calendar", "Keep track of important dates.", "Calendar")}
-            {card("Reminders", "Remember what matters.", "Reminders")}
-            {card("My Goals", "Make your plans happen.", "Goals")}
-            {card("Routines", "Create your daily routines.", "Routines")}
           </>
         )}
 
@@ -314,6 +330,7 @@ export default function MainShell({ onSignOut }: MainShellProps) {
         {TOP_TABS.map((tab) => {
           const isActive =
             page === tab ||
+            (tab === "My Life" && isLifePage) ||
             (tab === "More" &&
               [
                 "More",
