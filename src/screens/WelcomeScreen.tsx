@@ -2,210 +2,246 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
+  TextInput,
   StyleSheet,
   SafeAreaView,
   StatusBar,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
+  Alert,
 } from "react-native";
-import { colors } from "../theme";
 
-type AuthScreen = "welcome" | "signin" | "signup";
+type AuthScreen = "Welcome" | "SignUp" | "SignIn";
 
 type WelcomeScreenProps = {
   onContinue: () => void;
 };
 
 export default function WelcomeScreen({ onContinue }: WelcomeScreenProps) {
-  const [screen, setScreen] = useState<AuthScreen>("welcome");
+  const [screen, setScreen] = useState<AuthScreen>("Welcome");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
-  const handleAuth = () => {
-    if (!email.trim() || !password.trim()) {
-      Alert.alert("Almost there", "Please enter your email and password.");
+  const createAccount = () => {
+    if (!name.trim() || !email.trim() || !password || !confirmPassword) {
+      Alert.alert("Missing information", "Please fill in all the fields.");
       return;
     }
-    if (screen === "signup") {
-      if (!name.trim()) {
-        Alert.alert("Almost there", "Please enter your name.");
-        return;
-      }
-      if (password !== confirmPassword) {
-        Alert.alert("Passwords don’t match", "Please confirm your password.");
-        return;
-      }
+
+    if (!email.includes("@")) {
+      Alert.alert("Check your email", "Please enter a valid email address.");
+      return;
+    }
+
+    if (password.length < 8) {
+      Alert.alert("Password too short", "Use at least 8 characters.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert("Passwords don't match", "Please try again.");
+      return;
+    }
+
+    // UI validated — enter the app shell (secure auth still pending).
+    onContinue();
+  };
+
+  const signIn = () => {
+    if (!email.trim() || !password) {
+      Alert.alert("Missing information", "Please enter your email and password.");
+      return;
+    }
+    if (!email.includes("@")) {
+      Alert.alert("Check your email", "Please enter a valid email address.");
+      return;
     }
     onContinue();
   };
 
-  if (screen === "welcome") {
-    return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="dark-content" />
+  const renderWelcome = () => (
+    <View style={styles.center}>
+      <Text style={styles.logo}>HER ERA</Text>
+      <Text style={styles.tagline}>YOUR LIFE. YOUR SPACE. YOUR ERA.</Text>
 
-        <View style={styles.top}>
-          <Text style={styles.logo}>HER ERA</Text>
-          <Text style={styles.tagline}>YOUR LIFE. YOUR SPACE. YOUR ERA.</Text>
-        </View>
+      <View style={styles.circle}>
+        <Text style={styles.heart}>♡</Text>
+      </View>
 
-        <View style={styles.artContainer}>
-          <View style={styles.outerCircle}>
-            <View style={styles.innerCircle}>
-              <Text style={styles.symbol}>♡</Text>
-            </View>
-          </View>
-          <Text style={styles.sparkle}>✧</Text>
-          <Text style={styles.sparkleTwo}>✦</Text>
-        </View>
+      <Text style={styles.title}>Welcome to</Text>
+      <Text style={styles.purpleTitle}>YOUR ERA.</Text>
 
-        <View style={styles.welcome}>
-          <Text style={styles.title}>Welcome to</Text>
-          <Text style={styles.titlePurple}>YOUR ERA.</Text>
+      <Text style={styles.description}>
+        Your personal space to plan, grow, express yourself, and make every day
+        yours.
+      </Text>
 
-          <Text style={styles.description}>
-            Your personal space to plan, grow, express yourself, and make every
-            day yours.
-          </Text>
-        </View>
+      <TouchableOpacity
+        style={styles.primaryButton}
+        onPress={() => setScreen("SignUp")}
+      >
+        <Text style={styles.primaryText}>CREATE ACCOUNT</Text>
+      </TouchableOpacity>
 
-        <View style={styles.buttons}>
-          <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={() => setScreen("signup")}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.primaryText}>CREATE ACCOUNT</Text>
-          </TouchableOpacity>
+      <TouchableOpacity onPress={() => setScreen("SignIn")}>
+        <Text style={styles.link}>I ALREADY HAVE AN ACCOUNT</Text>
+      </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            onPress={() => setScreen("signin")}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.secondaryText}>I ALREADY HAVE AN ACCOUNT</Text>
-          </TouchableOpacity>
+      <TouchableOpacity onPress={onContinue}>
+        <Text style={styles.guest}>CONTINUE AS GUEST</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
-          <TouchableOpacity
-            style={styles.guestButton}
-            onPress={onContinue}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.guestText}>CONTINUE AS GUEST</Text>
-          </TouchableOpacity>
-        </View>
+  const renderSignUp = () => (
+    <ScrollView
+      contentContainerStyle={styles.formContainer}
+      keyboardShouldPersistTaps="handled"
+    >
+      <Text style={styles.logo}>HER ERA</Text>
+      <Text style={styles.tagline}>YOUR NEXT CHAPTER STARTS HERE</Text>
 
-        <Text style={styles.footer}>MADE FOR YOUR NEXT CHAPTER ♡</Text>
-      </SafeAreaView>
-    );
-  }
+      <Text style={styles.formTitle}>Create your account ♡</Text>
+      <Text style={styles.formDescription}>Let's get your space set up.</Text>
+
+      <Text style={styles.label}>YOUR NAME</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Enter your name"
+        placeholderTextColor="#B2A8BF"
+        value={name}
+        onChangeText={setName}
+      />
+
+      <Text style={styles.label}>EMAIL ADDRESS</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Enter your email"
+        placeholderTextColor="#B2A8BF"
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
+      />
+
+      <Text style={styles.label}>PASSWORD</Text>
+      <View style={styles.passwordBox}>
+        <TextInput
+          style={styles.passwordInput}
+          placeholder="Create a password"
+          placeholderTextColor="#B2A8BF"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={!showPassword}
+        />
+        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+          <Text style={styles.showText}>{showPassword ? "HIDE" : "SHOW"}</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Text style={styles.label}>CONFIRM PASSWORD</Text>
+      <View style={styles.passwordBox}>
+        <TextInput
+          style={styles.passwordInput}
+          placeholder="Enter password again"
+          placeholderTextColor="#B2A8BF"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry={!showConfirm}
+        />
+        <TouchableOpacity onPress={() => setShowConfirm(!showConfirm)}>
+          <Text style={styles.showText}>{showConfirm ? "HIDE" : "SHOW"}</Text>
+        </TouchableOpacity>
+      </View>
+
+      <TouchableOpacity style={styles.primaryButton} onPress={createAccount}>
+        <Text style={styles.primaryText}>CREATE MY ACCOUNT</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => setScreen("SignIn")}>
+        <Text style={styles.link}>Already have an account? Sign In</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => setScreen("Welcome")}>
+        <Text style={styles.back}>← Back to Welcome</Text>
+      </TouchableOpacity>
+    </ScrollView>
+  );
+
+  const renderSignIn = () => (
+    <ScrollView
+      contentContainerStyle={styles.formContainer}
+      keyboardShouldPersistTaps="handled"
+    >
+      <Text style={styles.logo}>HER ERA</Text>
+      <Text style={styles.formTitle}>Welcome back ♡</Text>
+      <Text style={styles.formDescription}>Your era is waiting.</Text>
+
+      <Text style={styles.label}>EMAIL ADDRESS</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Enter your email"
+        placeholderTextColor="#B2A8BF"
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
+      />
+
+      <Text style={styles.label}>PASSWORD</Text>
+      <View style={styles.passwordBox}>
+        <TextInput
+          style={styles.passwordInput}
+          placeholder="Enter your password"
+          placeholderTextColor="#B2A8BF"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={!showPassword}
+        />
+        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+          <Text style={styles.showText}>{showPassword ? "HIDE" : "SHOW"}</Text>
+        </TouchableOpacity>
+      </View>
+
+      <TouchableOpacity style={styles.primaryButton} onPress={signIn}>
+        <Text style={styles.primaryText}>SIGN IN</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => setScreen("SignUp")}>
+        <Text style={styles.link}>Don't have an account? Sign Up</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => setScreen("Welcome")}>
+        <Text style={styles.back}>← Back to Welcome</Text>
+      </TouchableOpacity>
+    </ScrollView>
+  );
 
   return (
-    <SafeAreaView style={styles.authContainer}>
+    <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <ScrollView
-          contentContainerStyle={styles.authContent}
-          keyboardShouldPersistTaps="handled"
-        >
-          <Text style={styles.logo}>HER ERA</Text>
-          <Text style={[styles.tagline, styles.authTagline]}>
-            YOUR LIFE. YOUR SPACE. YOUR ERA.
-          </Text>
-
-          <Text style={styles.authTitle}>
-            {screen === "signin" ? "Welcome Back!" : "Join Her Era"}
-          </Text>
-
-          {screen === "signup" && (
-            <TextInput
-              placeholder="Your name"
-              placeholderTextColor={colors.muted}
-              value={name}
-              onChangeText={setName}
-              style={styles.input}
-            />
-          )}
-
-          <TextInput
-            placeholder="Email address"
-            placeholderTextColor={colors.muted}
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            style={styles.input}
-          />
-
-          <TextInput
-            placeholder="Password"
-            placeholderTextColor={colors.muted}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            style={styles.input}
-          />
-
-          {screen === "signup" && (
-            <TextInput
-              placeholder="Confirm password"
-              placeholderTextColor={colors.muted}
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secureTextEntry
-              style={styles.input}
-            />
-          )}
-
-          <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={handleAuth}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.primaryText}>
-              {screen === "signin" ? "SIGN IN" : "CREATE MY ACCOUNT"}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            onPress={() => setScreen("welcome")}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.secondaryText}>GO BACK</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </KeyboardAvoidingView>
+      {screen === "Welcome" && renderWelcome()}
+      {screen === "SignUp" && renderSignUp()}
+      {screen === "SignIn" && renderSignIn()}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-
   container: {
     flex: 1,
     backgroundColor: "#F9F6FC",
+  },
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 28,
-    justifyContent: "space-between",
-    alignItems: "center",
   },
-
-  top: {
-    alignItems: "center",
-    marginTop: 45,
-  },
-
   logo: {
     fontSize: 32,
     fontWeight: "900",
@@ -213,180 +249,135 @@ const styles = StyleSheet.create({
     color: "#59476F",
     textAlign: "center",
   },
-
   tagline: {
     fontSize: 9,
-    letterSpacing: 3,
+    letterSpacing: 2,
     color: "#A69AB8",
     marginTop: 10,
+    marginBottom: 30,
     textAlign: "center",
   },
-
-  artContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 20,
-  },
-
-  outerCircle: {
-    width: 220,
-    height: 220,
-    borderRadius: 110,
+  circle: {
+    width: 180,
+    height: 180,
+    borderRadius: 100,
     backgroundColor: "#E8DDF5",
     borderWidth: 2,
     borderColor: "#C9B8E1",
     justifyContent: "center",
     alignItems: "center",
+    marginBottom: 28,
   },
-
-  innerCircle: {
-    width: 165,
-    height: 165,
-    borderRadius: 90,
-    backgroundColor: "#F8F4FC",
-    borderWidth: 2,
-    borderColor: "#D8C9E9",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  symbol: {
-    fontSize: 100,
+  heart: {
+    fontSize: 105,
     color: "#A58AC8",
   },
-
-  sparkle: {
-    position: "absolute",
-    top: 5,
-    right: 5,
-    fontSize: 35,
-    color: "#B49BCF",
-  },
-
-  sparkleTwo: {
-    position: "absolute",
-    bottom: 10,
-    left: 0,
-    fontSize: 28,
-    color: "#C0A9D9",
-  },
-
-  welcome: {
-    alignItems: "center",
-  },
-
   title: {
     fontSize: 29,
     fontWeight: "600",
     color: "#554467",
   },
-
-  titlePurple: {
+  purpleTitle: {
     fontSize: 38,
     fontWeight: "900",
     color: "#A78ACD",
     letterSpacing: 3,
-    marginTop: 3,
   },
-
   description: {
     textAlign: "center",
     fontSize: 14,
     color: "#897F94",
     lineHeight: 23,
-    marginTop: 17,
-    paddingHorizontal: 8,
+    marginTop: 15,
+    marginBottom: 25,
   },
-
-  buttons: {
-    width: "100%",
-    marginBottom: 20,
-  },
-
   primaryButton: {
     backgroundColor: "#B59AD8",
-    padding: 19,
-    borderRadius: 18,
+    padding: 18,
+    borderRadius: 17,
     alignItems: "center",
-    marginBottom: 13,
-    shadowColor: "#A58AC8",
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
+    marginTop: 18,
+    width: "100%",
   },
-
   primaryText: {
     color: "#FFFFFF",
     fontWeight: "900",
-    fontSize: 13,
+    fontSize: 12,
     letterSpacing: 2,
   },
-
-  secondaryButton: {
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1.5,
-    borderColor: "#CDBCE0",
-    padding: 18,
-    borderRadius: 18,
-    alignItems: "center",
-  },
-
-  secondaryText: {
+  link: {
     color: "#77618F",
     fontWeight: "800",
-    fontSize: 11,
-    letterSpacing: 1.2,
+    fontSize: 12,
+    textAlign: "center",
+    marginTop: 22,
   },
-
-  guestButton: {
-    padding: 16,
-    alignItems: "center",
-  },
-
-  guestText: {
+  guest: {
     color: "#A69AB8",
     fontWeight: "700",
     fontSize: 10,
     letterSpacing: 1.5,
+    textAlign: "center",
+    marginTop: 18,
   },
-
-  footer: {
-    color: "#B1A4C1",
-    fontSize: 9,
-    letterSpacing: 2,
-    marginBottom: 18,
-  },
-
-  authContainer: {
-    flex: 1,
-    backgroundColor: "#F9F6FC",
-  },
-
-  authContent: {
-    flexGrow: 1,
-    justifyContent: "center",
+  formContainer: {
     padding: 28,
+    paddingTop: 35,
+    paddingBottom: 50,
   },
-
-  authTagline: {
-    marginBottom: 48,
+  formTitle: {
+    fontSize: 27,
+    fontWeight: "900",
+    color: "#59476F",
+    marginTop: 25,
   },
-
-  authTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#554467",
-    marginBottom: 22,
+  formDescription: {
+    color: "#9588A5",
+    fontSize: 14,
+    marginTop: 7,
+    marginBottom: 25,
   },
-
+  label: {
+    color: "#77618F",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 2,
+    marginTop: 18,
+    marginBottom: 8,
+  },
   input: {
     backgroundColor: "#FFFFFF",
-    padding: 17,
-    borderRadius: 16,
-    marginBottom: 15,
-    fontSize: 15,
-    color: "#554467",
     borderWidth: 1,
-    borderColor: "#E8DDF5",
+    borderColor: "#DED2EC",
+    borderRadius: 15,
+    padding: 16,
+    fontSize: 14,
+    color: "#59476F",
+  },
+  passwordBox: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#DED2EC",
+    borderRadius: 15,
+    paddingHorizontal: 15,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  passwordInput: {
+    flex: 1,
+    paddingVertical: 16,
+    color: "#59476F",
+    fontSize: 14,
+  },
+  showText: {
+    color: "#967CB7",
+    fontSize: 10,
+    fontWeight: "900",
+  },
+  back: {
+    textAlign: "center",
+    color: "#9688A7",
+    marginTop: 25,
+    fontWeight: "700",
   },
 });
