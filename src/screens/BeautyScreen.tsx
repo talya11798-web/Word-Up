@@ -1,213 +1,271 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
+  ScrollView,
   View,
   Text,
-  TextInput,
   TouchableOpacity,
-  ScrollView,
+  Image,
   StyleSheet,
   Alert,
 } from "react-native";
 
-const PURPLE = "#A98BD4";
-const LIGHT = "#F5EFFB";
-const DARK = "#423451";
+const COLORS = {
+  background: "#F8F4FC",
+  purple: "#A98BD4",
+  lightPurple: "#EDE3F7",
+  silver: "#D9D5E0",
+  dark: "#423451",
+  white: "#FFFFFF",
+};
+
+type Look = {
+  id: string;
+  title: string;
+  category: string;
+  image: string;
+};
+
+const looks: Look[] = [
+  {
+    id: "1",
+    title: "Lavender Nail Inspo",
+    category: "Nails",
+    image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=600",
+  },
+  {
+    id: "2",
+    title: "Pink Nail Ideas",
+    category: "Nails",
+    image: "https://images.unsplash.com/photo-1610992015732-2449b76344bc?w=600",
+  },
+  {
+    id: "3",
+    title: "Natural Hair Inspo",
+    category: "Hair",
+    image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600",
+  },
+  {
+    id: "4",
+    title: "Braided Style",
+    category: "Hair",
+    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600",
+  },
+  {
+    id: "5",
+    title: "Everyday Outfit",
+    category: "Outfits",
+    image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600",
+  },
+  {
+    id: "6",
+    title: "Street Style",
+    category: "Outfits",
+    image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600",
+  },
+  {
+    id: "7",
+    title: "Soft Glam Inspo",
+    category: "Makeup",
+    image: "https://images.unsplash.com/photo-1524250502761-1ac6f2e30d43?w=600",
+  },
+  {
+    id: "8",
+    title: "Beauty Look",
+    category: "Makeup",
+    image: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=600",
+  },
+  {
+    id: "9",
+    title: "Beauty Essentials",
+    category: "Wishlist",
+    image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=600",
+  },
+  {
+    id: "10",
+    title: "Skincare Favorites",
+    category: "Wishlist",
+    image: "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=600",
+  },
+];
 
 const categories = [
-  {
-    name: "Nail Inspiration",
-    emoji: "💅",
-    description: "Save your favorite nail sets",
-  },
-  {
-    name: "Hairstyle Board",
-    emoji: "💇‍♀️",
-    description: "Collect hairstyle ideas",
-  },
-  {
-    name: "Outfit Planner",
-    emoji: "👗",
-    description: "Plan your next outfit",
-  },
-  {
-    name: "Makeup Inspiration",
-    emoji: "💄",
-    description: "Create your makeup board",
-  },
-  {
-    name: "Saved Looks",
-    emoji: "⭐",
-    description: "All your favorite looks",
-  },
-  {
-    name: "Beauty Wishlist",
-    emoji: "🛍️",
-    description: "Keep track of things you want",
-  },
-] as const;
+  "All",
+  "Nails",
+  "Hair",
+  "Outfits",
+  "Makeup",
+  "Saved",
+  "Wishlist",
+];
 
-type CategoryName = (typeof categories)[number]["name"];
-
-type Idea = {
-  category: CategoryName;
-  text: string;
+const INITIAL_CATEGORY_MAP: Record<string, string> = {
+  "Nail Inspiration": "Nails",
+  "Hairstyle Board": "Hair",
+  "Outfit Planner": "Outfits",
+  "Makeup Inspiration": "Makeup",
+  "Saved Looks": "Saved",
+  "Beauty Wishlist": "Wishlist",
 };
 
 type BeautyScreenProps = {
   onBack?: () => void;
-  initialCategory?: CategoryName;
+  initialCategory?: string;
 };
 
 export default function BeautyScreen({
   onBack,
   initialCategory,
 }: BeautyScreenProps) {
-  const [page, setPage] = useState<"Beauty" | "Category">(
-    initialCategory ? "Category" : "Beauty"
-  );
-  const [selected, setSelected] = useState<CategoryName | "">(
-    initialCategory ?? ""
-  );
-  const [idea, setIdea] = useState("");
-  const [ideas, setIdeas] = useState<Idea[]>([]);
+  const startingCategory = useMemo(() => {
+    if (!initialCategory) return "All";
+    return INITIAL_CATEGORY_MAP[initialCategory] ?? initialCategory;
+  }, [initialCategory]);
+
+  const [category, setCategory] = useState(startingCategory);
   const [saved, setSaved] = useState<string[]>([]);
+  const [wishlist, setWishlist] = useState<string[]>([]);
 
-  const addIdea = () => {
-    if (!idea.trim()) {
-      Alert.alert("Add an idea", "Type something first!");
-      return;
+  const toggleSave = (id: string) => {
+    setSaved((previous) =>
+      previous.includes(id)
+        ? previous.filter((item) => item !== id)
+        : [...previous, id]
+    );
+  };
+
+  const toggleWishlist = (id: string) => {
+    setWishlist((previous) =>
+      previous.includes(id)
+        ? previous.filter((item) => item !== id)
+        : [...previous, id]
+    );
+  };
+
+  const displayedLooks = looks.filter((look) => {
+    if (category === "All") return true;
+    if (category === "Saved") return saved.includes(look.id);
+    if (category === "Wishlist") {
+      return wishlist.includes(look.id) || look.category === "Wishlist";
     }
-    if (!selected || selected === "Saved Looks") return;
+    return look.category === category;
+  });
 
-    setIdeas([...ideas, { category: selected, text: idea.trim() }]);
-    setIdea("");
+  const openLook = (look: Look) => {
+    Alert.alert(look.title, "What would you like to do?", [
+      {
+        text: saved.includes(look.id) ? "Remove from Saved" : "Save Look ♡",
+        onPress: () => toggleSave(look.id),
+      },
+      {
+        text: wishlist.includes(look.id)
+          ? "Remove from Wishlist"
+          : "Add to Wishlist",
+        onPress: () => toggleWishlist(look.id),
+      },
+      { text: "Close", style: "cancel" },
+    ]);
   };
-
-  const saveLook = (item: string) => {
-    if (!saved.includes(item)) {
-      setSaved([...saved, item]);
-      Alert.alert("Saved! 💜", "Added to your Saved Looks.");
-    } else {
-      Alert.alert("Already saved", "This is already in your Saved Looks.");
-    }
-  };
-
-  const showCategory = (name: CategoryName) => {
-    setSelected(name);
-    setPage("Category");
-  };
-
-  const list: string[] =
-    selected === "Saved Looks"
-      ? saved
-      : ideas
-          .filter((item) => item.category === selected)
-          .map((item) => item.text);
 
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.brand}>HER ERA ♡</Text>
-          <Text style={styles.subtitle}>YOUR LIFE. YOUR SPACE. YOUR ERA.</Text>
+          <Text style={styles.logo}>HER ERA ♡</Text>
+          <Text style={styles.tagline}>YOUR LIFE. YOUR SPACE. YOUR ERA.</Text>
         </View>
 
-        {page === "Beauty" && (
-          <View style={styles.content}>
-            {onBack && (
-              <TouchableOpacity onPress={onBack}>
-                <Text style={styles.back}>‹ Back</Text>
-              </TouchableOpacity>
-            )}
-            <Text style={styles.smallTitle}>YOUR PERSONAL BEAUTY SPACE</Text>
-            <Text style={styles.heading}>Beauty & Style ✨</Text>
-            <Text style={styles.description}>
-              Your ideas, your style, your era.
-            </Text>
+        <View style={styles.intro}>
+          {onBack && (
+            <TouchableOpacity onPress={onBack}>
+              <Text style={styles.back}>‹ Back</Text>
+            </TouchableOpacity>
+          )}
+          <Text style={styles.eyebrow}>YOUR PERSONAL STYLE SPACE</Text>
+          <Text style={styles.heading}>Beauty & Style ✨</Text>
+          <Text style={styles.description}>
+            Find inspiration. Save your favorites. Create your own era.
+          </Text>
+        </View>
 
-            {categories.map((item) => (
-              <TouchableOpacity
-                key={item.name}
-                style={styles.category}
-                onPress={() => showCategory(item.name)}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryList}
+        >
+          {categories.map((item) => (
+            <TouchableOpacity
+              key={item}
+              onPress={() => setCategory(item)}
+              style={[
+                styles.categoryButton,
+                category === item && styles.activeCategory,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.categoryText,
+                  category === item && styles.activeCategoryText,
+                ]}
               >
-                <Text style={styles.emoji}>{item.emoji}</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.categoryTitle}>{item.name}</Text>
-                  <Text style={styles.categoryDescription}>
-                    {item.description}
+                {item}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        <View style={styles.galleryHeader}>
+          <Text style={styles.sectionTitle}>
+            {category === "All" ? "Explore your style" : category}
+          </Text>
+          <Text style={styles.count}>{displayedLooks.length} looks</Text>
+        </View>
+
+        {displayedLooks.length === 0 ? (
+          <View style={styles.empty}>
+            <Text style={styles.emptyEmoji}>🪻</Text>
+            <Text style={styles.emptyTitle}>Your board is waiting!</Text>
+            <Text style={styles.description}>
+              Save some inspiration and it&apos;ll show up here.
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.gallery}>
+            {displayedLooks.map((look) => (
+              <TouchableOpacity
+                key={look.id}
+                style={styles.imageCard}
+                onPress={() => openLook(look)}
+                activeOpacity={0.85}
+              >
+                <Image
+                  source={{ uri: look.image }}
+                  style={styles.photo}
+                  resizeMode="cover"
+                />
+
+                <TouchableOpacity
+                  style={styles.heart}
+                  onPress={() => toggleSave(look.id)}
+                >
+                  <Text style={styles.heartText}>
+                    {saved.includes(look.id) ? "♥" : "♡"}
                   </Text>
+                </TouchableOpacity>
+
+                <View style={styles.imageInfo}>
+                  <Text style={styles.imageTitle} numberOfLines={2}>
+                    {look.title}
+                  </Text>
+                  <Text style={styles.imageCategory}>{look.category}</Text>
                 </View>
-                <Text style={styles.arrow}>›</Text>
               </TouchableOpacity>
             ))}
           </View>
         )}
 
-        {page === "Category" && (
-          <View style={styles.content}>
-            <TouchableOpacity onPress={() => setPage("Beauty")}>
-              <Text style={styles.back}>‹ Back to Beauty</Text>
-            </TouchableOpacity>
-
-            <Text style={styles.heading}>{selected}</Text>
-            <Text style={styles.description}>
-              Keep all your inspiration in one place.
-            </Text>
-
-            {selected !== "Saved Looks" && (
-              <View style={styles.inputCard}>
-                <Text style={styles.inputTitle}>
-                  {selected === "Beauty Wishlist"
-                    ? "What do you want?"
-                    : "Add a new idea"}
-                </Text>
-
-                <TextInput
-                  style={styles.input}
-                  placeholder="Type your idea here..."
-                  placeholderTextColor="#9C91A8"
-                  value={idea}
-                  onChangeText={setIdea}
-                  onSubmitEditing={addIdea}
-                />
-
-                <TouchableOpacity style={styles.addButton} onPress={addIdea}>
-                  <Text style={styles.addButtonText}>+ Add to my board</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-
-            <Text style={styles.sectionTitle}>
-              {selected === "Saved Looks" ? "YOUR SAVED LOOKS" : "YOUR BOARD"}
-            </Text>
-
-            {list.length === 0 ? (
-              <View style={styles.empty}>
-                <Text style={styles.emptyEmoji}>🪻</Text>
-                <Text style={styles.emptyTitle}>Nothing here yet!</Text>
-                <Text style={styles.description}>
-                  Add your first idea and start building your board.
-                </Text>
-              </View>
-            ) : (
-              list.map((item, index) => (
-                <View key={`${item}-${index}`} style={styles.ideaCard}>
-                  <Text style={styles.ideaText}>{item}</Text>
-
-                  {selected !== "Saved Looks" && (
-                    <TouchableOpacity
-                      onPress={() => saveLook(item)}
-                      style={styles.saveButton}
-                    >
-                      <Text style={styles.saveText}>☆ Save</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              ))
-            )}
-          </View>
-        )}
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>MADE FOR YOUR ERA ♡</Text>
+        </View>
       </ScrollView>
     </View>
   );
@@ -216,165 +274,171 @@ export default function BeautyScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: LIGHT,
+    backgroundColor: COLORS.background,
   },
   header: {
-    backgroundColor: "#E9DDF7",
-    paddingTop: 28,
-    paddingBottom: 25,
-    paddingHorizontal: 24,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
+    backgroundColor: COLORS.lightPurple,
+    paddingHorizontal: 23,
+    paddingTop: 25,
+    paddingBottom: 23,
+    borderBottomLeftRadius: 27,
+    borderBottomRightRadius: 27,
   },
-  brand: {
+  logo: {
     fontSize: 27,
     fontWeight: "900",
-    color: DARK,
+    color: COLORS.dark,
     letterSpacing: 2,
   },
-  subtitle: {
-    color: "#766488",
+  tagline: {
     fontSize: 9,
     letterSpacing: 2,
+    color: "#78678B",
     marginTop: 5,
   },
-  content: {
-    padding: 22,
-  },
-  smallTitle: {
-    color: PURPLE,
-    fontSize: 10,
-    fontWeight: "800",
-    letterSpacing: 2,
-    marginTop: 12,
-  },
-  heading: {
-    fontSize: 29,
-    fontWeight: "900",
-    color: DARK,
-    marginTop: 9,
-  },
-  description: {
-    color: "#82758F",
-    fontSize: 13,
-    marginTop: 7,
-    lineHeight: 20,
-  },
-  category: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 19,
-    padding: 17,
-    marginTop: 13,
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#E9DFF2",
-  },
-  emoji: {
-    fontSize: 27,
-    marginRight: 14,
-  },
-  categoryTitle: {
-    fontSize: 15,
-    color: DARK,
-    fontWeight: "800",
-  },
-  categoryDescription: {
-    color: "#93879D",
-    fontSize: 11,
-    marginTop: 4,
-  },
-  arrow: {
-    fontSize: 27,
-    color: PURPLE,
+  intro: {
+    paddingHorizontal: 22,
+    paddingTop: 26,
+    paddingBottom: 15,
   },
   back: {
-    color: PURPLE,
+    color: COLORS.purple,
     fontWeight: "800",
     fontSize: 14,
-    marginBottom: 20,
+    marginBottom: 14,
   },
-  inputCard: {
-    backgroundColor: "#FFFFFF",
-    padding: 17,
-    borderRadius: 19,
-    marginTop: 22,
-    borderWidth: 1,
-    borderColor: "#E9DFF2",
-  },
-  inputTitle: {
-    color: DARK,
-    fontSize: 14,
-    fontWeight: "800",
-    marginBottom: 12,
-  },
-  input: {
-    backgroundColor: "#F8F4FC",
-    borderRadius: 12,
-    padding: 14,
-    color: DARK,
-    fontSize: 14,
-  },
-  addButton: {
-    backgroundColor: PURPLE,
-    padding: 14,
-    borderRadius: 12,
-    alignItems: "center",
-    marginTop: 12,
-  },
-  addButtonText: {
-    color: "#FFFFFF",
-    fontWeight: "800",
-  },
-  sectionTitle: {
-    color: "#88769D",
-    fontSize: 11,
+  eyebrow: {
+    color: COLORS.purple,
+    fontSize: 10,
     fontWeight: "900",
     letterSpacing: 2,
-    marginTop: 25,
-    marginBottom: 12,
   },
-  empty: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    padding: 25,
+  heading: {
+    fontSize: 30,
+    fontWeight: "900",
+    color: COLORS.dark,
+    marginTop: 8,
+  },
+  description: {
+    color: "#897D96",
+    fontSize: 13,
+    lineHeight: 20,
+    marginTop: 7,
+  },
+  categoryList: {
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    gap: 9,
+  },
+  categoryButton: {
+    paddingHorizontal: 17,
+    paddingVertical: 11,
+    backgroundColor: COLORS.white,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: COLORS.silver,
+  },
+  activeCategory: {
+    backgroundColor: COLORS.purple,
+    borderColor: COLORS.purple,
+  },
+  categoryText: {
+    color: COLORS.dark,
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  activeCategoryText: {
+    color: COLORS.white,
+  },
+  galleryHeader: {
+    paddingHorizontal: 22,
+    marginTop: 16,
+    marginBottom: 13,
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
+  },
+  sectionTitle: {
+    color: COLORS.dark,
+    fontSize: 19,
+    fontWeight: "900",
+  },
+  count: {
+    color: "#93869F",
+    fontSize: 11,
+  },
+  gallery: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    paddingHorizontal: 15,
+  },
+  imageCard: {
+    width: "48%",
+    backgroundColor: COLORS.white,
+    borderRadius: 17,
+    overflow: "hidden",
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: "#E9E1F0",
+  },
+  photo: {
+    width: "100%",
+    height: 190,
+    backgroundColor: COLORS.lightPurple,
+  },
+  heart: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    backgroundColor: "#FFFFFFE8",
+    borderRadius: 20,
+    width: 34,
+    height: 34,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  heartText: {
+    color: "#A477B8",
+    fontSize: 21,
+  },
+  imageInfo: {
+    padding: 11,
+  },
+  imageTitle: {
+    fontSize: 13,
+    color: COLORS.dark,
+    fontWeight: "800",
+  },
+  imageCategory: {
+    fontSize: 10,
+    color: "#9A8AA8",
     marginTop: 5,
   },
+  empty: {
+    backgroundColor: COLORS.white,
+    marginHorizontal: 20,
+    padding: 28,
+    borderRadius: 20,
+    alignItems: "center",
+  },
   emptyEmoji: {
-    fontSize: 35,
+    fontSize: 36,
   },
   emptyTitle: {
+    color: COLORS.dark,
     fontSize: 17,
-    color: DARK,
-    fontWeight: "800",
+    fontWeight: "900",
     marginTop: 10,
   },
-  ideaCard: {
-    backgroundColor: "#FFFFFF",
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 10,
-    flexDirection: "row",
+  footer: {
+    padding: 25,
     alignItems: "center",
-    justifyContent: "space-between",
   },
-  ideaText: {
-    color: DARK,
-    fontSize: 14,
-    fontWeight: "600",
-    flex: 1,
-  },
-  saveButton: {
-    backgroundColor: "#EFE6F8",
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    borderRadius: 10,
-    marginLeft: 8,
-  },
-  saveText: {
-    color: "#80649F",
+  footerText: {
+    color: "#A092AE",
+    fontSize: 10,
+    letterSpacing: 2,
     fontWeight: "800",
-    fontSize: 12,
   },
 });
