@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   StyleSheet,
 } from "react-native";
+import BeautyScreen from "./BeautyScreen";
 
 type MainShellProps = {
   onSignOut?: () => void;
@@ -15,12 +16,37 @@ type MainShellProps = {
 
 const TOP_TABS = ["Home", "My Life", "Diary", "My Cycle", "More"] as const;
 
+const BEAUTY_CATEGORY_BY_PAGE: Record<
+  string,
+  | "Nail Inspiration"
+  | "Hairstyle Board"
+  | "Outfit Planner"
+  | "Makeup Inspiration"
+  | "Saved Looks"
+  | "Beauty Wishlist"
+  | undefined
+> = {
+  Beauty: undefined,
+  Nails: "Nail Inspiration",
+  Hair: "Hairstyle Board",
+  Outfits: "Outfit Planner",
+  Makeup: "Makeup Inspiration",
+  "Saved Looks": "Saved Looks",
+  Wishlist: "Beauty Wishlist",
+};
+
 const PRIMARY_PAGES = new Set([
   "Home",
   "My Life",
   "Diary",
   "My Cycle",
   "Beauty",
+  "Nails",
+  "Hair",
+  "Outfits",
+  "Makeup",
+  "Saved Looks",
+  "Wishlist",
   "School",
   "My Growth",
   "Profile",
@@ -54,8 +80,18 @@ export default function MainShell({ onSignOut }: MainShellProps) {
     setNewTask("");
   };
 
+  const isBeautyPage = page in BEAUTY_CATEGORY_BY_PAGE;
+
   return (
     <SafeAreaView style={styles.container}>
+      {isBeautyPage ? (
+        <BeautyScreen
+          key={page}
+          initialCategory={BEAUTY_CATEGORY_BY_PAGE[page]}
+          onBack={() => setPage("More")}
+        />
+      ) : (
+        <>
       <View style={styles.header}>
         <Text style={styles.logo}>HER ERA</Text>
         <TouchableOpacity onPress={() => setPage("Settings")}>
@@ -180,49 +216,6 @@ export default function MainShell({ onSignOut }: MainShellProps) {
           </>
         )}
 
-        {page === "Beauty" && (
-          <>
-            <Text style={styles.heading}>Beauty & Style 💅</Text>
-            <Text style={styles.description}>
-              Your looks, your inspiration, your era.
-            </Text>
-            <View style={styles.affirmation}>
-              <Text style={styles.cardTitle}>MY BEAUTY SPACE ✨</Text>
-              <Text style={styles.quote}>Create your own style story.</Text>
-            </View>
-            {card(
-              "💅 Nail Inspiration",
-              "Save nail sets, colors and designs.",
-              "Nails"
-            )}
-            {card(
-              "💇‍♀️ Hairstyle Board",
-              "Collect braid, ponytail and hairstyle ideas.",
-              "Hair"
-            )}
-            {card(
-              "👗 Outfit Planner",
-              "Plan outfits and save combinations.",
-              "Outfits"
-            )}
-            {card(
-              "💄 Makeup Inspiration",
-              "Keep your favorite makeup looks.",
-              "Makeup"
-            )}
-            {card(
-              "🛍️ Beauty Wishlist",
-              "Keep a list of things you like.",
-              "Wishlist"
-            )}
-            {card(
-              "🎀 Saved Looks",
-              "Keep all your favorite looks together.",
-              "Saved Looks"
-            )}
-          </>
-        )}
-
         {page === "School" && (
           <>
             <Text style={styles.heading}>School 📚</Text>
@@ -314,6 +307,8 @@ export default function MainShell({ onSignOut }: MainShellProps) {
           </>
         )}
       </ScrollView>
+        </>
+      )}
 
       <View style={styles.nav}>
         {TOP_TABS.map((tab) => {
@@ -323,6 +318,12 @@ export default function MainShell({ onSignOut }: MainShellProps) {
               [
                 "More",
                 "Beauty",
+                "Nails",
+                "Hair",
+                "Outfits",
+                "Makeup",
+                "Wishlist",
+                "Saved Looks",
                 "School",
                 "My Growth",
                 "Profile",
