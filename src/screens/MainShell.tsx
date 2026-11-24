@@ -12,6 +12,7 @@ import BeautyScreen from "./BeautyScreen";
 import DiaryScreen from "./DiaryScreen";
 import MyCycleScreen from "./MyCycleScreen";
 import MyLifeScreen from "./MyLifeScreen";
+import SchoolScreen from "./SchoolScreen";
 
 type MainShellProps = {
   onSignOut?: () => void;
@@ -106,10 +107,24 @@ const PRIMARY_PAGES = new Set([
   "Saved Looks",
   "Wishlist",
   "School",
+  "Homework",
+  "Study",
+  "Subjects",
+  "Flashcards",
+  "Tests",
   "My Growth",
   "Profile",
   "Settings",
   "More",
+]);
+
+const SCHOOL_PAGES = new Set([
+  "School",
+  "Homework",
+  "Study",
+  "Subjects",
+  "Flashcards",
+  "Tests",
 ]);
 
 export default function MainShell({ onSignOut }: MainShellProps) {
@@ -142,6 +157,7 @@ export default function MainShell({ onSignOut }: MainShellProps) {
   const isLifePage = page in LIFE_PAGE_BY_ROUTE;
   const isDiaryPage = page in DIARY_PAGE_BY_ROUTE;
   const isCyclePage = page in CYCLE_PAGE_BY_ROUTE;
+  const isSchoolPage = SCHOOL_PAGES.has(page);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -170,6 +186,8 @@ export default function MainShell({ onSignOut }: MainShellProps) {
           initialPage={CYCLE_PAGE_BY_ROUTE[page]}
           onBack={() => setPage("Home")}
         />
+      ) : isSchoolPage ? (
+        <SchoolScreen key={page} onBack={() => setPage("More")} />
       ) : (
         <>
       <View style={styles.header}>
@@ -237,17 +255,6 @@ export default function MainShell({ onSignOut }: MainShellProps) {
                 <Text style={styles.add}>+ ADD TASK</Text>
               </TouchableOpacity>
             </View>
-          </>
-        )}
-
-        {page === "School" && (
-          <>
-            <Text style={styles.heading}>School 📚</Text>
-            {card("Homework Tracker", "Keep up with assignments.", "Homework")}
-            {card("Study Planner", "Organize your study sessions.", "Study")}
-            {card("Subjects", "Keep your classes organized.", "Subjects")}
-            {card("Flashcards", "Review what you're learning.", "Flashcards")}
-            {card("Test Reminders", "Remember upcoming tests.", "Tests")}
           </>
         )}
 
@@ -342,20 +349,12 @@ export default function MainShell({ onSignOut }: MainShellProps) {
             (tab === "Diary" && isDiaryPage) ||
             (tab === "My Cycle" && isCyclePage) ||
             (tab === "More" &&
-              [
-                "More",
-                "Beauty",
-                "Nails",
-                "Hair",
-                "Outfits",
-                "Makeup",
-                "Wishlist",
-                "Saved Looks",
-                "School",
-                "My Growth",
-                "Profile",
-                "Settings",
-              ].includes(page));
+              (page === "More" ||
+                page === "My Growth" ||
+                page === "Profile" ||
+                page === "Settings" ||
+                isBeautyPage ||
+                isSchoolPage));
           const label = tab === "My Cycle" ? "🌷 Cycle" : tab;
           return (
             <TouchableOpacity key={tab} onPress={() => setPage(tab)}>
