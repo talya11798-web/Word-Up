@@ -85,7 +85,7 @@ export default function WelcomeScreen({ onContinue }: WelcomeScreenProps) {
 
           {screen === "Welcome" ? (
             <>
-              <View style={[styles.heroArt, shadow.soft]}>
+              <View style={styles.heroArt}>
                 <LinearGradient
                   colors={["#E8DDF5", "#F5C5A8"]}
                   start={{ x: 0, y: 0 }}

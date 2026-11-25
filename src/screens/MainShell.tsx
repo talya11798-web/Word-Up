@@ -225,6 +225,7 @@ export default function MainShell({ onSignOut }: MainShellProps) {
       </View>
 
       <ScrollView
+        key={page}
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
@@ -784,7 +785,11 @@ export default function MainShell({ onSignOut }: MainShellProps) {
                 ) : (
                   <Text style={styles.navIcon}>{item.icon}</Text>
                 )}
-                {active && <Text style={styles.navLabel}>{item.label}</Text>}
+                <Text
+                  style={[styles.navLabel, !active && styles.navLabelMuted]}
+                >
+                  {item.label}
+                </Text>
               </TouchableOpacity>
             );
           })}
@@ -842,7 +847,7 @@ const styles = StyleSheet.create({
     fontFamily: "DMSans_700Bold",
     fontSize: 15,
   },
-  scroll: { paddingHorizontal: 20, paddingBottom: 120 },
+  scroll: { paddingHorizontal: 20, paddingBottom: 140 },
   greeting: {
     fontFamily: "CormorantGaramond_700Bold",
     fontSize: 34,
@@ -863,7 +868,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     alignItems: "center",
     justifyContent: "center",
-    ...shadow.soft,
+    borderWidth: 1,
+    borderColor: colors.line,
   },
   dayChipActive: { backgroundColor: colors.eggplant },
   dayLabel: {
@@ -1156,4 +1162,5 @@ const styles = StyleSheet.create({
     fontSize: 10,
     marginTop: 4,
   },
+  navLabelMuted: { color: "#9A8790" },
 });
