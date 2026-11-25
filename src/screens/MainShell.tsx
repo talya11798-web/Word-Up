@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   SafeAreaView,
   ScrollView,
@@ -7,22 +7,25 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  StatusBar,
+  Pressable,
 } from "react-native";
-
-const lavender = "#B99AD9";
-const dark = "#453653";
-const pale = "#F5EFFB";
+import { LinearGradient } from "expo-linear-gradient";
+import { colors, radii, shadow } from "../theme";
 
 type MainShellProps = {
   onSignOut?: () => void;
 };
 
+const WEEK = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+
 export default function MainShell({ onSignOut }: MainShellProps) {
   const [page, setPage] = useState("Home");
   const [moreOpen, setMoreOpen] = useState(false);
 
-  const [tasks, setTasks] = useState<string[]>([]);
+  const [tasks, setTasks] = useState<string[]>([
+    "Finish homework",
+    "Plan tomorrow",
+  ]);
   const [taskInput, setTaskInput] = useState("");
   const [doneTasks, setDoneTasks] = useState<string[]>([]);
 
@@ -43,13 +46,57 @@ export default function MainShell({ onSignOut }: MainShellProps) {
   const [profileBio, setProfileBio] = useState("");
   const [theme, setTheme] = useState("Lavender");
   const [notifications, setNotifications] = useState(true);
-
   const [beautySaved, setBeautySaved] = useState<string[]>([]);
+  const [selectedDay, setSelectedDay] = useState(new Date().getDay());
+
+  const todayLabel = useMemo(
+    () =>
+      new Date().toLocaleDateString(undefined, {
+        weekday: "long",
+        month: "short",
+        day: "numeric",
+      }),
+    []
+  );
+
+  const displayName = profileName.trim() || "Gorgeous";
+  const tasksLeft =
+    tasks.length - doneTasks.filter((task) => tasks.includes(task)).length;
+  const progress = tasks.length
+    ? Math.round(
+        (doneTasks.filter((task) => tasks.includes(task)).length /
+          tasks.length) *
+          100
+      )
+    : 20;
+
+  const goTo = (next: string) => {
+    setPage(next);
+    setMoreOpen(false);
+  };
 
   const addTask = () => {
     if (!taskInput.trim()) return;
     setTasks((old) => [taskInput.trim(), ...old]);
     setTaskInput("");
+  };
+
+  const toggleTask = (task: string) => {
+    setDoneTasks((old) =>
+      old.includes(task) ? old.filter((item) => item !== task) : [...old, task]
+    );
+  };
+
+  const saveJournal = () => {
+    if (!journal.trim()) return;
+    setJournalEntries((old) => [journal.trim(), ...old]);
+    setJournal("");
+  };
+
+  const savePeriod = () => {
+    if (!periodDate.trim()) return;
+    setPeriodHistory((old) => [periodDate.trim(), ...old]);
+    setPeriodDate("");
   };
 
   const addSchoolTask = () => {
@@ -64,25 +111,6 @@ export default function MainShell({ onSignOut }: MainShellProps) {
     setGoalInput("");
   };
 
-  const saveJournal = () => {
-    if (!journal.trim()) return;
-    setJournalEntries((old) => [journal.trim(), ...old]);
-    setJournal("");
-    setPage("Diary");
-  };
-
-  const savePeriod = () => {
-    if (!periodDate.trim()) return;
-    setPeriodHistory((old) => [periodDate.trim(), ...old]);
-    setPeriodDate("");
-  };
-
-  const toggleTask = (task: string) => {
-    setDoneTasks((old) =>
-      old.includes(task) ? old.filter((item) => item !== task) : [...old, task]
-    );
-  };
-
   const toggleBeauty = (item: string) => {
     setBeautySaved((old) =>
       old.includes(item)
@@ -90,22 +118,6 @@ export default function MainShell({ onSignOut }: MainShellProps) {
         : [...old, item]
     );
   };
-
-  const goTo = (nextPage: string) => {
-    setPage(nextPage);
-    setMoreOpen(false);
-  };
-
-  const heading = (title: string, subtitle?: string) => (
-    <View style={styles.heading}>
-      <Text style={styles.headingTitle}>{title}</Text>
-      {!!subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
-    </View>
-  );
-
-  const card = (children: React.ReactNode) => (
-    <View style={styles.card}>{children}</View>
-  );
 
   const field = (
     value: string,
@@ -118,29 +130,54 @@ export default function MainShell({ onSignOut }: MainShellProps) {
       value={value}
       onChangeText={onChangeText}
       placeholder={placeholder}
-      placeholderTextColor="#A99BB3"
+      placeholderTextColor="#B3A4BC"
       multiline={multiline}
+      onSubmitEditing={multiline ? undefined : undefined}
     />
   );
 
-  const action = (label: string, onPress: () => void) => (
-    <TouchableOpacity style={styles.primaryButton} onPress={onPress}>
-      <Text style={styles.primaryButtonText}>{label}</Text>
+  const primaryBtn = (label: string, onPress: () => void) => (
+    <TouchableOpacity activeOpacity={0.88} onPress={onPress}>
+      <LinearGradient
+        colors={["#C9A9E8", "#A98BD4", "#F0C3B0"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.primaryBtn}
+      >
+        <Text style={styles.primaryBtnText}>{label}</Text>
+      </LinearGradient>
     </TouchableOpacity>
   );
 
-  const item = (label: string, onPress: () => void) => (
-    <TouchableOpacity style={styles.listItem} onPress={onPress}>
-      <Text style={styles.listText}>{label}</Text>
-      <Text style={styles.arrow}>›</Text>
-    </TouchableOpacity>
+  const softCard = (children: React.ReactNode, style?: object) => (
+    <View style={[styles.card, style]}>{children}</View>
   );
 
-  const sectionLabel = (label: string) => (
-    <Text style={styles.sectionLabel}>{label}</Text>
+  const pageTitle = (title: string, subtitle?: string) => (
+    <View style={styles.pageHeader}>
+      <Text style={styles.serifTitle}>{title}</Text>
+      {!!subtitle && <Text style={styles.eyebrow}>{subtitle}</Text>}
+    </View>
   );
 
-  const menu = [
+  const navItems = [
+    { key: "Home", icon: "⌂", label: "Home" },
+    { key: "My Life", icon: "▦", label: "Life" },
+    { key: "Diary", icon: "♡", label: "Diary" },
+    { key: "My Cycle", icon: "🌷", label: "Cycle" },
+    { key: "More", icon: "•••", label: "More" },
+  ] as const;
+
+  const spaces = [
+    { emoji: "🗓️", name: "My Life", tint: colors.sky },
+    { emoji: "📔", name: "Diary", tint: colors.blush },
+    { emoji: "🌷", name: "My Cycle", tint: "#EDE0F5" },
+    { emoji: "✨", name: "Beauty & Style", tint: colors.peachSoft },
+    { emoji: "📚", name: "School", tint: colors.mint },
+    { emoji: "🌱", name: "My Growth", tint: "#E8F3E9" },
+  ];
+
+  const moreMenu = [
     ["✨", "Beauty & Style"],
     ["📚", "School"],
     ["🌱", "My Growth"],
@@ -162,71 +199,181 @@ export default function MainShell({ onSignOut }: MainShellProps) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" />
-
       <View style={styles.topBar}>
-        <Text style={styles.logo}>
-          HER ERA<Text style={styles.logoDot}>.</Text>
-        </Text>
-        <Text style={styles.topTag}>YOUR LIFE. YOUR SPACE. YOUR ERA.</Text>
+        <View>
+          <Text style={styles.brand}>
+            HER ERA<Text style={styles.brandDot}>.</Text>
+          </Text>
+          <Text style={styles.brandTag}>YOUR LIFE · YOUR SPACE · YOUR ERA</Text>
+        </View>
+        <View style={styles.topActions}>
+          <TouchableOpacity
+            style={styles.iconBubble}
+            onPress={() => goTo("Settings")}
+          >
+            <Text style={styles.iconBubbleText}>⚙</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.avatar}
+            onPress={() => goTo("Profile")}
+          >
+            <Text style={styles.avatarText}>
+              {displayName.slice(0, 1).toUpperCase()}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+      >
         {page === "Home" && (
           <>
-            {heading(
-              `Hey${profileName ? `, ${profileName}` : " there"}! ♡`,
-              "WELCOME TO YOUR SPACE"
-            )}
-            <View style={styles.hero}>
-              <Text style={styles.heroSmall}>YOUR DAILY REMINDER</Text>
-              <Text style={styles.heroTitle}>This is your era.</Text>
-              <Text style={styles.heroText}>
-                Take your time. Grow at your own pace. Make today yours.
-              </Text>
-            </View>
+            <Text style={styles.greeting}>Hi, {displayName}</Text>
+            <Text style={styles.dateLine}>{todayLabel}</Text>
 
-            {sectionLabel("YOUR DAY")}
-            {card(
-              <>
-                <Text style={styles.cardTitle}>To-do list</Text>
-                <Text style={styles.subtitle}>
-                  {tasks.length - doneTasks.filter((t) => tasks.includes(t)).length}{" "}
-                  tasks left to do
-                </Text>
-                {tasks.slice(0, 3).map((task, index) => (
-                  <TouchableOpacity
-                    key={`${task}-${index}`}
-                    style={styles.listItem}
-                    onPress={() => toggleTask(task)}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.weekRow}
+            >
+              {WEEK.map((day, index) => {
+                const active = index === selectedDay;
+                return (
+                  <Pressable
+                    key={day}
+                    onPress={() => setSelectedDay(index)}
+                    style={[styles.dayChip, active && styles.dayChipActive]}
                   >
-                    <Text style={styles.listText}>
-                      {doneTasks.includes(task) ? "☑ " : "☐ "}
-                      {task}
+                    <Text
+                      style={[styles.dayLabel, active && styles.dayLabelActive]}
+                    >
+                      {day}
                     </Text>
-                  </TouchableOpacity>
-                ))}
-                {item("Open My Life →", () => goTo("My Life"))}
+                    <Text
+                      style={[styles.dayNum, active && styles.dayNumActive]}
+                    >
+                      {((new Date().getDate() - new Date().getDay() + index + 31) %
+                        31) +
+                        1}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+
+            {softCard(
+              <>
+                <Text style={styles.serifSoft}>Today&apos;s era score</Text>
+                <View style={styles.scoreRow}>
+                  <LinearGradient
+                    colors={["#8E6BB0", "#C9A9E8", "#F5C5A8"]}
+                    start={{ x: 0, y: 0.5 }}
+                    end={{ x: 1, y: 0.5 }}
+                    style={styles.scoreRing}
+                  >
+                    <View style={styles.scoreInner}>
+                      <Text style={styles.scoreValue}>{progress}</Text>
+                      <Text style={styles.scoreUnit}>pts</Text>
+                    </View>
+                  </LinearGradient>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.quoteMark}>“</Text>
+                    <Text style={styles.quote}>
+                      Every day is a soft new chapter. You are becoming her.
+                    </Text>
+                  </View>
+                </View>
               </>
             )}
 
-            {sectionLabel("YOUR SPACES")}
-            <View style={styles.grid}>
-              {[
-                ["🗓️", "My Life"],
-                ["📔", "Diary"],
-                ["🌷", "My Cycle"],
-                ["✨", "Beauty & Style"],
-                ["📚", "School"],
-                ["🌱", "My Growth"],
-              ].map(([emoji, name]) => (
-                <TouchableOpacity
-                  key={name}
-                  style={styles.gridCard}
-                  onPress={() => goTo(name)}
+            <View style={styles.quickRow}>
+              <TouchableOpacity
+                style={{ flex: 1 }}
+                activeOpacity={0.9}
+                onPress={() => goTo("Diary")}
+              >
+                <LinearGradient
+                  colors={["#D7C2F0", "#B59AD8"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.quickCard}
                 >
-                  <Text style={styles.gridEmoji}>{emoji}</Text>
-                  <Text style={styles.gridText}>{name}</Text>
+                  <Text style={styles.quickEmoji}>✎</Text>
+                  <Text style={styles.quickTitle}>New diary note</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{ flex: 1 }}
+                activeOpacity={0.9}
+                onPress={() => goTo("My Life")}
+              >
+                <LinearGradient
+                  colors={["#F8D9B8", "#F0B894"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.quickCard}
+                >
+                  <Text style={styles.quickEmoji}>✓</Text>
+                  <Text style={styles.quickTitle}>New life task</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+
+            {softCard(
+              <>
+                <View style={styles.rowBetween}>
+                  <Text style={styles.cardTitle}>Your day</Text>
+                  <Text style={styles.pillMuted}>{tasksLeft} left</Text>
+                </View>
+                <View style={styles.progressTrack}>
+                  <LinearGradient
+                    colors={["#8E6BB0", "#C9A9E8", "#F5C5A8"]}
+                    start={{ x: 0, y: 0.5 }}
+                    end={{ x: 1, y: 0.5 }}
+                    style={[
+                      styles.progressFill,
+                      { width: `${Math.max(progress, 8)}%` },
+                    ]}
+                  />
+                </View>
+                {tasks.slice(0, 3).map((task, index) => (
+                  <TouchableOpacity
+                    key={`${task}-${index}`}
+                    style={styles.listRow}
+                    onPress={() => toggleTask(task)}
+                  >
+                    <View
+                      style={[
+                        styles.check,
+                        doneTasks.includes(task) && styles.checkOn,
+                      ]}
+                    >
+                      <Text style={styles.checkMark}>
+                        {doneTasks.includes(task) ? "✓" : ""}
+                      </Text>
+                    </View>
+                    <Text style={styles.listText}>{task}</Text>
+                  </TouchableOpacity>
+                ))}
+                <TouchableOpacity onPress={() => goTo("My Life")}>
+                  <Text style={styles.link}>Open My Life →</Text>
+                </TouchableOpacity>
+              </>
+            )}
+
+            <Text style={styles.sectionLabel}>Your spaces</Text>
+            <View style={styles.grid}>
+              {spaces.map((space) => (
+                <TouchableOpacity
+                  key={space.name}
+                  style={[styles.spaceCard, { backgroundColor: space.tint }]}
+                  onPress={() => goTo(space.name)}
+                  activeOpacity={0.88}
+                >
+                  <Text style={styles.spaceEmoji}>{space.emoji}</Text>
+                  <Text style={styles.spaceName}>{space.name}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -235,82 +382,114 @@ export default function MainShell({ onSignOut }: MainShellProps) {
 
         {page === "My Life" && (
           <>
-            {heading("My Life 🗓️", "PLAN YOUR DAYS YOUR WAY")}
-            {card(
+            {pageTitle("My Life", "PLAN YOUR DAYS YOUR WAY")}
+            {softCard(
               <>
                 <Text style={styles.cardTitle}>Add a to-do</Text>
                 {field(taskInput, setTaskInput, "What do you need to do?")}
-                {action("+ Add Task", addTask)}
+                {primaryBtn("+ Add Task", addTask)}
               </>
             )}
-            {sectionLabel("MY TASKS")}
-            {card(
+            <Text style={styles.sectionLabel}>My tasks</Text>
+            {softCard(
               <>
                 {tasks.length === 0 && (
-                  <Text style={styles.subtitle}>
-                    Your list is waiting for you ♡
-                  </Text>
+                  <Text style={styles.muted}>Your list is waiting for you ♡</Text>
                 )}
                 {tasks.map((task, index) => (
                   <TouchableOpacity
                     key={`${task}-${index}`}
-                    style={styles.listItem}
+                    style={styles.listRow}
                     onPress={() => toggleTask(task)}
                   >
-                    <Text style={styles.listText}>
-                      {doneTasks.includes(task) ? "☑ " : "☐ "}
-                      {task}
-                    </Text>
+                    <View
+                      style={[
+                        styles.check,
+                        doneTasks.includes(task) && styles.checkOn,
+                      ]}
+                    >
+                      <Text style={styles.checkMark}>
+                        {doneTasks.includes(task) ? "✓" : ""}
+                      </Text>
+                    </View>
+                    <Text style={styles.listText}>{task}</Text>
                   </TouchableOpacity>
                 ))}
               </>
             )}
-            {sectionLabel("LIFE ORGANIZER")}
-            {item("Calendar", () => goTo("Calendar"))}
-            {item("Reminders", () => goTo("Reminders"))}
-            {item("Goals", () => goTo("My Growth"))}
-            {item("Daily routines", () => goTo("My Growth"))}
+            <Text style={styles.sectionLabel}>Life organizer</Text>
+            {["Calendar", "Reminders", "Goals", "Daily routines"].map(
+              (label) => (
+                <TouchableOpacity
+                  key={label}
+                  style={styles.menuRow}
+                  onPress={() =>
+                    goTo(
+                      label === "Goals" || label === "Daily routines"
+                        ? "My Growth"
+                        : label
+                    )
+                  }
+                >
+                  <Text style={styles.menuRowText}>{label}</Text>
+                  <Text style={styles.chevron}>›</Text>
+                </TouchableOpacity>
+              )
+            )}
           </>
         )}
 
         {page === "Diary" && (
           <>
-            {heading("The Diary 📔", "A LITTLE SPACE JUST FOR YOU")}
-            {card(
+            {pageTitle("The Diary", "A LITTLE SPACE JUST FOR YOU")}
+            {softCard(
               <>
                 <Text style={styles.cardTitle}>Write something today</Text>
                 {field(journal, setJournal, "What's on your mind?", true)}
-                {action("Save Journal Entry ♡", saveJournal)}
+                {primaryBtn("Save Journal Entry ♡", saveJournal)}
               </>
             )}
-            {sectionLabel("MY ENTRIES")}
-            {card(
-              <>
-                {journalEntries.length === 0 && (
-                  <Text style={styles.subtitle}>
+            <Text style={styles.sectionLabel}>My entries</Text>
+            {journalEntries.length === 0
+              ? softCard(
+                  <Text style={styles.muted}>
                     Your memories will appear here.
                   </Text>
-                )}
-                {journalEntries.map((entry, index) => (
-                  <View key={`${entry}-${index}`} style={styles.listItem}>
-                    <Text style={styles.listText}>{entry}</Text>
+                )
+              : journalEntries.map((entry, index) => (
+                  <View key={`${entry}-${index}`} style={styles.noteCard}>
+                    <LinearGradient
+                      colors={["rgba(181,154,216,0.18)", "rgba(245,197,168,0.22)"]}
+                      style={StyleSheet.absoluteFill}
+                    />
+                    <Text style={styles.noteTitle}>Entry {index + 1}</Text>
+                    <Text style={styles.noteBody} numberOfLines={3}>
+                      {entry}
+                    </Text>
+                    <View style={styles.tagRow}>
+                      <Text style={styles.tag}>{todayLabel}</Text>
+                      <Text style={[styles.tag, styles.tagAccent]}>
+                        Soft priority
+                      </Text>
+                    </View>
                   </View>
                 ))}
-              </>
-            )}
           </>
         )}
 
         {page === "My Cycle" && (
           <>
-            {heading("My Cycle 🌷", "YOUR PERSONAL CYCLE SPACE")}
-            <View style={styles.hero}>
-              <Text style={styles.heroTitle}>Get to know your cycle.</Text>
-              <Text style={styles.heroText}>
-                Keep track of dates and personal notes.
-              </Text>
-            </View>
-            {card(
+            {pageTitle("My Cycle", "YOUR PERSONAL CYCLE SPACE")}
+            {softCard(
+              <>
+                <Text style={styles.serifSoft}>Get to know your cycle.</Text>
+                <Text style={styles.muted}>
+                  Keep track of dates and personal notes with gentleness.
+                </Text>
+              </>,
+              { backgroundColor: "#F3EAF8" }
+            )}
+            {softCard(
               <>
                 <Text style={styles.cardTitle}>Period start date</Text>
                 {field(
@@ -318,46 +497,38 @@ export default function MainShell({ onSignOut }: MainShellProps) {
                   setPeriodDate,
                   "Enter date, e.g. 2026-11-20"
                 )}
-                {action("Save Period", savePeriod)}
+                {primaryBtn("Save Period", savePeriod)}
               </>
             )}
-            {sectionLabel("CYCLE NOTES")}
-            {card(
-              <>
-                {field(
-                  cycleNotes,
-                  setCycleNotes,
-                  "Add symptoms or notes...",
-                  true
-                )}
-              </>
+            <Text style={styles.sectionLabel}>Cycle notes</Text>
+            {softCard(
+              field(cycleNotes, setCycleNotes, "Add symptoms or notes...", true)
             )}
-            {sectionLabel("PERIOD HISTORY")}
-            {card(
+            <Text style={styles.sectionLabel}>Period history</Text>
+            {softCard(
               <>
                 {periodHistory.length === 0 && (
-                  <Text style={styles.subtitle}>
+                  <Text style={styles.muted}>
                     Your saved dates will appear here.
                   </Text>
                 )}
                 {periodHistory.map((date, index) => (
                   <Text style={styles.listText} key={`${date}-${index}`}>
-                    🌷 {date}
+                    🌷  {date}
                   </Text>
                 ))}
               </>
             )}
             <Text style={styles.disclaimer}>
               Cycle dates and predictions can vary. This tracker is for personal
-              organization, not medical advice. Your information is not yet
-              protected by a private account or secure storage.
+              organization, not medical advice.
             </Text>
           </>
         )}
 
         {page === "Beauty & Style" && (
           <>
-            {heading("Beauty & Style ✨", "YOUR INSPIRATION BOARD")}
+            {pageTitle("Beauty & Style", "YOUR INSPIRATION BOARD")}
             <View style={styles.grid}>
               {[
                 "Nails 💅",
@@ -366,30 +537,39 @@ export default function MainShell({ onSignOut }: MainShellProps) {
                 "Makeup 💄",
                 "Wishlist 🛍️",
                 "Saved Looks ♡",
-              ].map((name) => (
-                <TouchableOpacity
-                  key={name}
-                  style={styles.gridCard}
-                  onPress={() => toggleBeauty(name)}
-                >
-                  <Text style={styles.gridText}>{name}</Text>
-                  <Text style={styles.subtitle}>
-                    {beautySaved.includes(name) ? "Saved ♡" : "Tap to save"}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+              ].map((name, index) => {
+                const tints = [
+                  colors.blush,
+                  colors.sky,
+                  colors.peachSoft,
+                  "#EDE0F5",
+                  colors.mint,
+                  "#F7E8F1",
+                ];
+                return (
+                  <TouchableOpacity
+                    key={name}
+                    style={[
+                      styles.spaceCard,
+                      { backgroundColor: tints[index % tints.length] },
+                    ]}
+                    onPress={() => toggleBeauty(name)}
+                  >
+                    <Text style={styles.spaceName}>{name}</Text>
+                    <Text style={styles.muted}>
+                      {beautySaved.includes(name) ? "Saved ♡" : "Tap to save"}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
-            <Text style={styles.disclaimer}>
-              This is the starter inspiration board. Photo galleries and image
-              uploads can be added in a later update.
-            </Text>
           </>
         )}
 
         {page === "School" && (
           <>
-            {heading("School 📚", "STAY ON TOP OF YOUR SCHOOL LIFE")}
-            {card(
+            {pageTitle("School", "STAY ON TOP OF YOUR SCHOOL LIFE")}
+            {softCard(
               <>
                 <Text style={styles.cardTitle}>Add an assignment</Text>
                 {field(
@@ -397,44 +577,42 @@ export default function MainShell({ onSignOut }: MainShellProps) {
                   setSchoolInput,
                   "Enter homework or assignment"
                 )}
-                {action("+ Add Assignment", addSchoolTask)}
+                {primaryBtn("+ Add Assignment", addSchoolTask)}
               </>
             )}
-            {sectionLabel("MY ASSIGNMENTS")}
-            {card(
+            <Text style={styles.sectionLabel}>My assignments</Text>
+            {softCard(
               <>
                 {schoolTasks.length === 0 && (
-                  <Text style={styles.subtitle}>No assignments added yet.</Text>
+                  <Text style={styles.muted}>No assignments added yet.</Text>
                 )}
                 {schoolTasks.map((task, index) => (
                   <Text style={styles.listText} key={`${task}-${index}`}>
-                    📚 {task}
+                    📚  {task}
                   </Text>
                 ))}
               </>
             )}
-            {item("Study planner", () => goTo("Study Planner"))}
-            {item("Study notes", () => goTo("Study Notes"))}
           </>
         )}
 
         {page === "My Growth" && (
           <>
-            {heading("My Growth 🌱", "BECOMING HER, ONE DAY AT A TIME")}
-            {card(
+            {pageTitle("My Growth", "BECOMING HER, ONE DAY AT A TIME")}
+            {softCard(
               <>
                 <Text style={styles.cardTitle}>My goals</Text>
                 {field(goalInput, setGoalInput, "Add a personal goal")}
-                {action("+ Add Goal", addGoal)}
+                {primaryBtn("+ Add Goal", addGoal)}
                 {goals.map((goal, index) => (
                   <Text style={styles.listText} key={`${goal}-${index}`}>
-                    🌷 {goal}
+                    🌷  {goal}
                   </Text>
                 ))}
               </>
             )}
-            {sectionLabel("DAILY REMINDERS")}
-            {card(
+            <Text style={styles.sectionLabel}>Daily reminders</Text>
+            {softCard(
               <>
                 {[
                   "Make time for myself",
@@ -444,19 +622,18 @@ export default function MainShell({ onSignOut }: MainShellProps) {
                   "Rest when I need to",
                 ].map((value) => (
                   <Text style={styles.listText} key={value}>
-                    ♡ {value}
+                    ♡  {value}
                   </Text>
                 ))}
               </>
             )}
-            {item("Faith & reflection", () => goTo("Faith & Reflection"))}
           </>
         )}
 
         {page === "Profile" && (
           <>
-            {heading("My Profile 👤", "YOUR PERSONAL SPACE")}
-            {card(
+            {pageTitle("My Profile", "YOUR PERSONAL SPACE")}
+            {softCard(
               <>
                 <Text style={styles.cardTitle}>Your name</Text>
                 {field(profileName, setProfileName, "Enter your name")}
@@ -467,24 +644,30 @@ export default function MainShell({ onSignOut }: MainShellProps) {
                   "A little about you...",
                   true
                 )}
-                <Text style={styles.subtitle}>HER ERA member ♡</Text>
+                <Text style={styles.muted}>HER ERA member ♡</Text>
               </>
             )}
-            {item("Settings", () => goTo("Settings"))}
+            <TouchableOpacity
+              style={styles.menuRow}
+              onPress={() => goTo("Settings")}
+            >
+              <Text style={styles.menuRowText}>Settings</Text>
+              <Text style={styles.chevron}>›</Text>
+            </TouchableOpacity>
           </>
         )}
 
         {page === "Settings" && (
           <>
-            {heading("Settings ⚙️", "MAKE HER ERA YOURS")}
-            {card(
+            {pageTitle("Settings", "MAKE HER ERA YOURS")}
+            {softCard(
               <>
                 <Text style={styles.cardTitle}>Appearance</Text>
                 {["Lavender", "Soft Pink", "Cream", "Dark Mode"].map(
                   (value) => (
                     <TouchableOpacity
                       key={value}
-                      style={styles.listItem}
+                      style={styles.listRow}
                       onPress={() => setTheme(value)}
                     >
                       <Text style={styles.listText}>
@@ -494,13 +677,12 @@ export default function MainShell({ onSignOut }: MainShellProps) {
                     </TouchableOpacity>
                   )
                 )}
-                <Text style={styles.subtitle}>
-                  Theme selection is a prototype preference; it does not recolor
-                  the app yet.
+                <Text style={styles.muted}>
+                  Theme preference is saved here as a prototype choice.
                 </Text>
               </>
             )}
-            {card(
+            {softCard(
               <>
                 <Text style={styles.cardTitle}>Notifications</Text>
                 <TouchableOpacity
@@ -512,224 +694,466 @@ export default function MainShell({ onSignOut }: MainShellProps) {
                       : "🔕 Notifications Off"}
                   </Text>
                 </TouchableOpacity>
-                <Text style={styles.subtitle}>
-                  This switch does not yet control phone notifications.
-                </Text>
               </>
             )}
-            {card(
+            {softCard(
               <>
                 <Text style={styles.cardTitle}>Privacy & Security</Text>
-                <Text style={styles.subtitle}>
+                <Text style={styles.muted}>
                   Account sign-in, Face ID, secure PIN, and private data storage
-                  are planned features and are not active yet.
+                  are planned and not active yet.
                 </Text>
               </>
             )}
-            {card(
+            {softCard(
               <>
                 <Text style={styles.cardTitle}>About HER ERA</Text>
                 <Text style={styles.listText}>
                   YOUR LIFE. YOUR SPACE. YOUR ERA.
                 </Text>
-                <Text style={styles.subtitle}>Version 1.0 starter</Text>
+                <Text style={styles.muted}>Version 1.0 starter</Text>
               </>
             )}
-            {onSignOut && (
-              <TouchableOpacity style={styles.primaryButton} onPress={onSignOut}>
-                <Text style={styles.primaryButtonText}>Sign Out</Text>
-              </TouchableOpacity>
-            )}
+            {onSignOut && primaryBtn("Sign Out", onSignOut)}
           </>
         )}
 
-        {page !== "Home" && !mainPages.includes(page) && (
+        {!mainPages.includes(page) && (
           <>
-            {heading(page, "COMING TO YOUR SPACE")}
-            <View style={styles.hero}>
-              <Text style={styles.heroTitle}>Coming soon ♡</Text>
-              <Text style={styles.heroText}>
-                We&apos;re building this part of HER ERA next.
-              </Text>
-            </View>
-            {action("Back to Home", () => goTo("Home"))}
+            {pageTitle(page, "COMING TO YOUR SPACE")}
+            {softCard(
+              <>
+                <Text style={styles.serifSoft}>Coming soon ♡</Text>
+                <Text style={styles.muted}>
+                  We&apos;re building this part of HER ERA next.
+                </Text>
+              </>
+            )}
+            {primaryBtn("Back to Home", () => goTo("Home"))}
           </>
         )}
 
         {moreOpen && (
           <View style={styles.morePanel}>
-            {menu.map(([emoji, name]) =>
-              item(`${emoji}  ${name}`, () => goTo(name))
-            )}
+            {moreMenu.map(([emoji, name]) => (
+              <TouchableOpacity
+                key={name}
+                style={styles.menuRow}
+                onPress={() => goTo(name)}
+              >
+                <Text style={styles.menuRowText}>
+                  {emoji}  {name}
+                </Text>
+                <Text style={styles.chevron}>›</Text>
+              </TouchableOpacity>
+            ))}
           </View>
         )}
       </ScrollView>
 
-      <View style={styles.bottomNav}>
-        {[
-          ["⌂", "Home"],
-          ["▦", "My Life"],
-          ["♡", "Diary"],
-          ["🌷", "My Cycle"],
-        ].map(([emoji, name]) => (
-          <TouchableOpacity
-            key={name}
-            style={styles.navButton}
-            onPress={() => goTo(name)}
-          >
-            <Text
-              style={[styles.navIcon, page === name && styles.navSelected]}
-            >
-              {emoji}
-            </Text>
-            <Text
-              style={[styles.navLabel, page === name && styles.navSelected]}
-            >
-              {name}
-            </Text>
-          </TouchableOpacity>
-        ))}
-        <TouchableOpacity
-          style={styles.navButton}
-          onPress={() => setMoreOpen((old) => !old)}
-        >
-          <Text
-            style={[
-              styles.navIcon,
-              moreOpen && styles.navSelected,
-            ]}
-          >
-            •••
-          </Text>
-          <Text
-            style={[
-              styles.navLabel,
-              moreOpen && styles.navSelected,
-            ]}
-          >
-            More
-          </Text>
-        </TouchableOpacity>
+      <View style={styles.navWrap}>
+        <View style={[styles.navBar, shadow.float]}>
+          {navItems.map((item) => {
+            const active =
+              (item.key === "More" && moreOpen) ||
+              (!moreOpen && page === item.key) ||
+              (!moreOpen &&
+                item.key === "More" &&
+                ["Beauty & Style", "School", "My Growth", "Profile", "Settings"].includes(
+                  page
+                ));
+            return (
+              <TouchableOpacity
+                key={item.key}
+                style={styles.navItem}
+                onPress={() => {
+                  if (item.key === "More") {
+                    setMoreOpen((old) => !old);
+                    return;
+                  }
+                  goTo(item.key);
+                }}
+              >
+                {active ? (
+                  <LinearGradient
+                    colors={["#C9A9E8", "#F0C3B0"]}
+                    style={styles.navActiveBubble}
+                  >
+                    <Text style={styles.navActiveIcon}>{item.icon}</Text>
+                  </LinearGradient>
+                ) : (
+                  <Text style={styles.navIcon}>{item.icon}</Text>
+                )}
+                {active && <Text style={styles.navLabel}>{item.label}</Text>}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: pale },
+  safe: { flex: 1, backgroundColor: colors.bg },
   topBar: {
     paddingHorizontal: 22,
-    paddingTop: 12,
-    paddingBottom: 14,
-    backgroundColor: "#FFFFFF",
+    paddingTop: 10,
+    paddingBottom: 8,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
-  logo: { fontSize: 25, fontWeight: "900", color: dark, letterSpacing: 3 },
-  logoDot: { color: lavender },
-  topTag: { color: "#9A8BA5", fontSize: 9, letterSpacing: 2, marginTop: 3 },
-  scroll: { padding: 18, paddingBottom: 35 },
-  heading: { marginBottom: 18 },
-  headingTitle: { fontSize: 27, fontWeight: "800", color: dark },
-  subtitle: { fontSize: 12, color: "#91839C", marginTop: 5, lineHeight: 18 },
-  hero: {
-    backgroundColor: "#E8DDF4",
-    borderRadius: 24,
-    padding: 22,
-    marginBottom: 20,
+  brand: {
+    fontFamily: "CormorantGaramond_700Bold",
+    fontSize: 28,
+    color: colors.ink,
+    letterSpacing: 2,
   },
-  heroSmall: { color: "#806A91", fontSize: 10, letterSpacing: 2 },
-  heroTitle: { fontSize: 24, fontWeight: "800", color: dark, marginTop: 8 },
-  heroText: { color: "#766681", fontSize: 14, lineHeight: 21, marginTop: 8 },
-  card: {
-    backgroundColor: "#FFFFFF",
+  brandDot: { color: colors.lavenderDeep },
+  brandTag: {
+    fontFamily: "DMSans_500Medium",
+    color: colors.muted,
+    fontSize: 9,
+    letterSpacing: 1.4,
+    marginTop: 2,
+  },
+  topActions: { flexDirection: "row", alignItems: "center", gap: 10 },
+  iconBubble: {
+    width: 40,
+    height: 40,
     borderRadius: 20,
-    padding: 17,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#EEE5F4",
+    backgroundColor: colors.white,
+    alignItems: "center",
+    justifyContent: "center",
+    ...shadow.soft,
+  },
+  iconBubbleText: { color: colors.lavenderDeep, fontSize: 16 },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.lavender,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarText: {
+    color: colors.white,
+    fontFamily: "DMSans_700Bold",
+    fontSize: 15,
+  },
+  scroll: { paddingHorizontal: 20, paddingBottom: 120 },
+  greeting: {
+    fontFamily: "CormorantGaramond_700Bold",
+    fontSize: 34,
+    color: colors.ink,
+    marginTop: 8,
+  },
+  dateLine: {
+    fontFamily: "DMSans_400Regular",
+    color: colors.muted,
+    marginTop: 4,
+    marginBottom: 14,
+  },
+  weekRow: { gap: 10, paddingBottom: 8 },
+  dayChip: {
+    width: 48,
+    height: 64,
+    borderRadius: 18,
+    backgroundColor: colors.white,
+    alignItems: "center",
+    justifyContent: "center",
+    ...shadow.soft,
+  },
+  dayChipActive: { backgroundColor: colors.eggplant },
+  dayLabel: {
+    fontFamily: "DMSans_500Medium",
+    fontSize: 11,
+    color: colors.muted,
+  },
+  dayLabelActive: { color: "#E8DDF4" },
+  dayNum: {
+    fontFamily: "DMSans_700Bold",
+    fontSize: 16,
+    color: colors.ink,
+    marginTop: 4,
+  },
+  dayNumActive: { color: colors.white },
+  card: {
+    backgroundColor: colors.card,
+    borderRadius: radii.lg,
+    padding: 18,
+    marginTop: 14,
+    ...shadow.soft,
+  },
+  serifSoft: {
+    fontFamily: "CormorantGaramond_600SemiBold",
+    fontSize: 24,
+    color: colors.ink,
+  },
+  serifTitle: {
+    fontFamily: "CormorantGaramond_700Bold",
+    fontSize: 34,
+    color: colors.ink,
+  },
+  pageHeader: { marginTop: 10, marginBottom: 4 },
+  eyebrow: {
+    fontFamily: "DMSans_500Medium",
+    color: colors.lavenderDeep,
+    fontSize: 11,
+    letterSpacing: 1.6,
+    marginTop: 6,
+  },
+  scoreRow: { flexDirection: "row", gap: 14, marginTop: 14, alignItems: "center" },
+  scoreRing: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  scoreInner: {
+    width: 78,
+    height: 78,
+    borderRadius: 39,
+    backgroundColor: colors.white,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  scoreValue: {
+    fontFamily: "CormorantGaramond_700Bold",
+    fontSize: 28,
+    color: colors.ink,
+  },
+  scoreUnit: {
+    fontFamily: "DMSans_500Medium",
+    fontSize: 10,
+    color: colors.muted,
+  },
+  quoteMark: {
+    fontFamily: "CormorantGaramond_700Bold",
+    fontSize: 28,
+    color: colors.lavender,
+  },
+  quote: {
+    fontFamily: "CormorantGaramond_600SemiBold_Italic",
+    fontSize: 17,
+    lineHeight: 24,
+    color: colors.ink,
+  },
+  quickRow: { flexDirection: "row", gap: 12, marginTop: 14 },
+  quickCard: {
+    borderRadius: radii.lg,
+    padding: 18,
+    minHeight: 110,
+    justifyContent: "space-between",
+  },
+  quickEmoji: { color: colors.white, fontSize: 20, fontWeight: "700" },
+  quickTitle: {
+    fontFamily: "DMSans_700Bold",
+    color: colors.white,
+    fontSize: 15,
+  },
+  rowBetween: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   cardTitle: {
+    fontFamily: "DMSans_700Bold",
     fontSize: 16,
-    fontWeight: "700",
-    color: dark,
+    color: colors.ink,
     marginBottom: 10,
   },
-  sectionLabel: {
-    color: "#927AA7",
-    fontWeight: "800",
-    letterSpacing: 2,
-    fontSize: 11,
-    marginTop: 12,
+  pillMuted: {
+    fontFamily: "DMSans_500Medium",
+    color: colors.lavenderDeep,
+    fontSize: 12,
+  },
+  progressTrack: {
+    height: 10,
+    borderRadius: 999,
+    backgroundColor: "#F0E8F5",
+    overflow: "hidden",
     marginBottom: 12,
   },
-  input: {
-    backgroundColor: "#F8F4FB",
-    borderRadius: 13,
-    padding: 14,
-    color: dark,
-    marginBottom: 12,
-    fontSize: 14,
-  },
-  multiline: { minHeight: 110, textAlignVertical: "top" },
-  primaryButton: {
-    backgroundColor: lavender,
-    padding: 14,
-    borderRadius: 13,
-    alignItems: "center",
-    marginTop: 3,
-  },
-  primaryButtonText: { color: "#FFFFFF", fontWeight: "800" },
-  listItem: {
+  progressFill: { height: "100%", borderRadius: 999 },
+  listRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 13,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0EAF4",
+    gap: 12,
+    paddingVertical: 10,
   },
-  listText: { color: dark, fontSize: 14, flexShrink: 1, paddingVertical: 4 },
-  arrow: { color: lavender, fontSize: 22 },
+  check: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: "#D5C5E3",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.white,
+  },
+  checkOn: {
+    backgroundColor: colors.lavender,
+    borderColor: colors.lavender,
+  },
+  checkMark: { color: colors.white, fontSize: 12, fontWeight: "700" },
+  listText: {
+    fontFamily: "DMSans_400Regular",
+    color: colors.ink,
+    fontSize: 14,
+    flex: 1,
+  },
+  link: {
+    fontFamily: "DMSans_700Bold",
+    color: colors.lavenderDeep,
+    marginTop: 8,
+  },
+  sectionLabel: {
+    fontFamily: "CormorantGaramond_600SemiBold",
+    fontSize: 22,
+    color: colors.ink,
+    marginTop: 22,
+    marginBottom: 4,
+  },
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
+    marginTop: 8,
   },
-  gridCard: {
+  spaceCard: {
     width: "48%",
-    backgroundColor: "#FFFFFF",
-    borderRadius: 19,
-    padding: 17,
+    borderRadius: radii.lg,
+    padding: 18,
+    minHeight: 108,
     marginBottom: 12,
-    minHeight: 100,
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#EEE5F4",
+    justifyContent: "space-between",
   },
-  gridEmoji: { fontSize: 24, marginBottom: 8 },
-  gridText: { color: dark, fontSize: 14, fontWeight: "700" },
+  spaceEmoji: { fontSize: 24 },
+  spaceName: {
+    fontFamily: "DMSans_700Bold",
+    color: colors.ink,
+    fontSize: 14,
+  },
+  input: {
+    backgroundColor: colors.bgSoft,
+    borderRadius: radii.sm,
+    padding: 14,
+    color: colors.ink,
+    fontFamily: "DMSans_400Regular",
+    fontSize: 14,
+    marginBottom: 12,
+  },
+  multiline: { minHeight: 120, textAlignVertical: "top" },
+  primaryBtn: {
+    borderRadius: radii.md,
+    paddingVertical: 15,
+    alignItems: "center",
+  },
+  primaryBtnText: {
+    color: colors.white,
+    fontFamily: "DMSans_700Bold",
+    fontSize: 14,
+  },
+  muted: {
+    fontFamily: "DMSans_400Regular",
+    color: colors.muted,
+    fontSize: 13,
+    lineHeight: 20,
+  },
+  menuRow: {
+    backgroundColor: colors.white,
+    borderRadius: radii.md,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    marginTop: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    ...shadow.soft,
+  },
+  menuRowText: {
+    fontFamily: "DMSans_500Medium",
+    color: colors.ink,
+    fontSize: 15,
+  },
+  chevron: { color: colors.lavenderDeep, fontSize: 22 },
+  noteCard: {
+    borderRadius: radii.lg,
+    padding: 18,
+    marginTop: 12,
+    overflow: "hidden",
+    backgroundColor: colors.white,
+    minHeight: 130,
+    ...shadow.soft,
+  },
+  noteTitle: {
+    fontFamily: "DMSans_700Bold",
+    color: colors.ink,
+    fontSize: 16,
+  },
+  noteBody: {
+    fontFamily: "DMSans_400Regular",
+    color: colors.muted,
+    marginTop: 8,
+    lineHeight: 20,
+  },
+  tagRow: { flexDirection: "row", gap: 8, marginTop: 14 },
+  tag: {
+    fontFamily: "DMSans_500Medium",
+    fontSize: 11,
+    color: colors.lavenderDeep,
+    backgroundColor: "rgba(255,255,255,0.75)",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  tagAccent: { color: "#B06A4E", backgroundColor: "rgba(245,197,168,0.45)" },
   disclaimer: {
-    color: "#8C7E96",
+    fontFamily: "DMSans_400Regular",
+    color: colors.muted,
     fontSize: 11,
     lineHeight: 17,
-    marginVertical: 12,
+    marginTop: 14,
   },
-  bottomNav: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    backgroundColor: "#FFFFFF",
-    paddingTop: 10,
-    paddingBottom: 8,
-    borderTopWidth: 1,
-    borderTopColor: "#EEE5F4",
-  },
-  navButton: { alignItems: "center", minWidth: 55 },
-  navIcon: { fontSize: 19, color: "#A99BB3" },
-  navLabel: { fontSize: 9, color: "#9A8BA5", marginTop: 4 },
-  navSelected: { color: "#906BB0", fontWeight: "900" },
   morePanel: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    paddingHorizontal: 15,
-    paddingBottom: 10,
-    marginTop: 10,
+    marginTop: 16,
+    backgroundColor: colors.white,
+    borderRadius: radii.lg,
+    padding: 8,
+    ...shadow.soft,
+  },
+  navWrap: {
+    position: "absolute",
+    left: 18,
+    right: 18,
+    bottom: 18,
+  },
+  navBar: {
+    backgroundColor: colors.eggplant,
+    borderRadius: radii.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  navItem: { alignItems: "center", minWidth: 54 },
+  navIcon: { color: "#C9B8D6", fontSize: 18 },
+  navActiveBubble: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  navActiveIcon: { color: colors.white, fontSize: 16, fontWeight: "700" },
+  navLabel: {
+    fontFamily: "DMSans_500Medium",
+    color: "#E8DDF4",
+    fontSize: 10,
+    marginTop: 4,
   },
 });

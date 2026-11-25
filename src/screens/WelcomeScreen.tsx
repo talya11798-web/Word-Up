@@ -6,10 +6,13 @@ import {
   TextInput,
   StyleSheet,
   SafeAreaView,
-  StatusBar,
   ScrollView,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { colors, radii, shadow } from "../theme";
 
 type AuthScreen = "Welcome" | "SignUp" | "SignIn";
 
@@ -31,29 +34,27 @@ export default function WelcomeScreen({ onContinue }: WelcomeScreenProps) {
       Alert.alert("Missing information", "Please fill in all the fields.");
       return;
     }
-
     if (!email.includes("@")) {
       Alert.alert("Check your email", "Please enter a valid email address.");
       return;
     }
-
     if (password.length < 8) {
       Alert.alert("Password too short", "Use at least 8 characters.");
       return;
     }
-
     if (password !== confirmPassword) {
       Alert.alert("Passwords don't match", "Please try again.");
       return;
     }
-
-    // UI validated — enter the app shell (secure auth still pending).
     onContinue();
   };
 
   const signIn = () => {
     if (!email.trim() || !password) {
-      Alert.alert("Missing information", "Please enter your email and password.");
+      Alert.alert(
+        "Missing information",
+        "Please enter your email and password."
+      );
       return;
     }
     if (!email.includes("@")) {
@@ -63,321 +64,335 @@ export default function WelcomeScreen({ onContinue }: WelcomeScreenProps) {
     onContinue();
   };
 
-  const renderWelcome = () => (
-    <View style={styles.center}>
-      <Text style={styles.logo}>HER ERA</Text>
-      <Text style={styles.tagline}>YOUR LIFE. YOUR SPACE. YOUR ERA.</Text>
-
-      <View style={styles.circle}>
-        <Text style={styles.heart}>♡</Text>
-      </View>
-
-      <Text style={styles.title}>Welcome to</Text>
-      <Text style={styles.purpleTitle}>YOUR ERA.</Text>
-
-      <Text style={styles.description}>
-        Your personal space to plan, grow, express yourself, and make every day
-        yours.
-      </Text>
-
-      <TouchableOpacity
-        style={styles.primaryButton}
-        onPress={() => setScreen("SignUp")}
-      >
-        <Text style={styles.primaryText}>CREATE ACCOUNT</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => setScreen("SignIn")}>
-        <Text style={styles.link}>I ALREADY HAVE AN ACCOUNT</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={onContinue}>
-        <Text style={styles.guest}>CONTINUE AS GUEST</Text>
-      </TouchableOpacity>
-    </View>
-  );
-
-  const renderSignUp = () => (
-    <ScrollView
-      contentContainerStyle={styles.formContainer}
-      keyboardShouldPersistTaps="handled"
-    >
-      <Text style={styles.logo}>HER ERA</Text>
-      <Text style={styles.tagline}>YOUR NEXT CHAPTER STARTS HERE</Text>
-
-      <Text style={styles.formTitle}>Create your account ♡</Text>
-      <Text style={styles.formDescription}>Let's get your space set up.</Text>
-
-      <Text style={styles.label}>YOUR NAME</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter your name"
-        placeholderTextColor="#B2A8BF"
-        value={name}
-        onChangeText={setName}
-      />
-
-      <Text style={styles.label}>EMAIL ADDRESS</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter your email"
-        placeholderTextColor="#B2A8BF"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-
-      <Text style={styles.label}>PASSWORD</Text>
-      <View style={styles.passwordBox}>
-        <TextInput
-          style={styles.passwordInput}
-          placeholder="Create a password"
-          placeholderTextColor="#B2A8BF"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={!showPassword}
-        />
-        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-          <Text style={styles.showText}>{showPassword ? "HIDE" : "SHOW"}</Text>
-        </TouchableOpacity>
-      </View>
-
-      <Text style={styles.label}>CONFIRM PASSWORD</Text>
-      <View style={styles.passwordBox}>
-        <TextInput
-          style={styles.passwordInput}
-          placeholder="Enter password again"
-          placeholderTextColor="#B2A8BF"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          secureTextEntry={!showConfirm}
-        />
-        <TouchableOpacity onPress={() => setShowConfirm(!showConfirm)}>
-          <Text style={styles.showText}>{showConfirm ? "HIDE" : "SHOW"}</Text>
-        </TouchableOpacity>
-      </View>
-
-      <TouchableOpacity style={styles.primaryButton} onPress={createAccount}>
-        <Text style={styles.primaryText}>CREATE MY ACCOUNT</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => setScreen("SignIn")}>
-        <Text style={styles.link}>Already have an account? Sign In</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => setScreen("Welcome")}>
-        <Text style={styles.back}>← Back to Welcome</Text>
-      </TouchableOpacity>
-    </ScrollView>
-  );
-
-  const renderSignIn = () => (
-    <ScrollView
-      contentContainerStyle={styles.formContainer}
-      keyboardShouldPersistTaps="handled"
-    >
-      <Text style={styles.logo}>HER ERA</Text>
-      <Text style={styles.formTitle}>Welcome back ♡</Text>
-      <Text style={styles.formDescription}>Your era is waiting.</Text>
-
-      <Text style={styles.label}>EMAIL ADDRESS</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter your email"
-        placeholderTextColor="#B2A8BF"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
-
-      <Text style={styles.label}>PASSWORD</Text>
-      <View style={styles.passwordBox}>
-        <TextInput
-          style={styles.passwordInput}
-          placeholder="Enter your password"
-          placeholderTextColor="#B2A8BF"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={!showPassword}
-        />
-        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-          <Text style={styles.showText}>{showPassword ? "HIDE" : "SHOW"}</Text>
-        </TouchableOpacity>
-      </View>
-
-      <TouchableOpacity style={styles.primaryButton} onPress={signIn}>
-        <Text style={styles.primaryText}>SIGN IN</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => setScreen("SignUp")}>
-        <Text style={styles.link}>Don't have an account? Sign Up</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => setScreen("Welcome")}>
-        <Text style={styles.back}>← Back to Welcome</Text>
-      </TouchableOpacity>
-    </ScrollView>
-  );
-
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
-      {screen === "Welcome" && renderWelcome()}
-      {screen === "SignUp" && renderSignUp()}
-      {screen === "SignIn" && renderSignIn()}
+      <LinearGradient
+        colors={["#FBF6FA", "#F3EAF8", "#FBE8DC"]}
+        style={StyleSheet.absoluteFill}
+      />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <ScrollView
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text style={styles.logo}>
+            HER ERA<Text style={styles.logoDot}>.</Text>
+          </Text>
+          <Text style={styles.tagline}>YOUR LIFE · YOUR SPACE · YOUR ERA</Text>
+
+          {screen === "Welcome" ? (
+            <>
+              <View style={[styles.heroArt, shadow.soft]}>
+                <LinearGradient
+                  colors={["#E8DDF5", "#F5C5A8"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.outerCircle}
+                >
+                  <View style={styles.innerCircle}>
+                    <Text style={styles.heart}>♡</Text>
+                  </View>
+                </LinearGradient>
+              </View>
+
+              <Text style={styles.title}>Welcome to</Text>
+              <Text style={styles.titleAccent}>your era.</Text>
+              <Text style={styles.description}>
+                A soft personal space to plan, grow, write, and make every day
+                feel like yours.
+              </Text>
+
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={() => setScreen("SignUp")}
+              >
+                <LinearGradient
+                  colors={["#C9A9E8", "#A98BD4", "#F0C3B0"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.primaryButton}
+                >
+                  <Text style={styles.primaryText}>CREATE ACCOUNT</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.secondaryButton}
+                onPress={() => setScreen("SignIn")}
+              >
+                <Text style={styles.secondaryText}>
+                  I ALREADY HAVE AN ACCOUNT
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={onContinue}>
+                <Text style={styles.guest}>CONTINUE AS GUEST</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <Text style={styles.formTitle}>
+                {screen === "SignIn"
+                  ? "Welcome back ♡"
+                  : "Create your account ♡"}
+              </Text>
+              <Text style={styles.description}>
+                {screen === "SignIn"
+                  ? "Your era is waiting."
+                  : "Let's get your space set up."}
+              </Text>
+
+              <View style={[styles.formCard, shadow.soft]}>
+                {screen === "SignUp" && (
+                  <>
+                    <Text style={styles.label}>YOUR NAME</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Enter your name"
+                      placeholderTextColor="#B3A4BC"
+                      value={name}
+                      onChangeText={setName}
+                    />
+                  </>
+                )}
+
+                <Text style={styles.label}>EMAIL ADDRESS</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your email"
+                  placeholderTextColor="#B3A4BC"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+
+                <Text style={styles.label}>PASSWORD</Text>
+                <View style={styles.passwordBox}>
+                  <TextInput
+                    style={styles.passwordInput}
+                    placeholder={
+                      screen === "SignUp"
+                        ? "Create a password"
+                        : "Enter your password"
+                    }
+                    placeholderTextColor="#B3A4BC"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
+                    <Text style={styles.showText}>
+                      {showPassword ? "HIDE" : "SHOW"}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                {screen === "SignUp" && (
+                  <>
+                    <Text style={styles.label}>CONFIRM PASSWORD</Text>
+                    <View style={styles.passwordBox}>
+                      <TextInput
+                        style={styles.passwordInput}
+                        placeholder="Enter password again"
+                        placeholderTextColor="#B3A4BC"
+                        value={confirmPassword}
+                        onChangeText={setConfirmPassword}
+                        secureTextEntry={!showConfirm}
+                      />
+                      <TouchableOpacity
+                        onPress={() => setShowConfirm(!showConfirm)}
+                      >
+                        <Text style={styles.showText}>
+                          {showConfirm ? "HIDE" : "SHOW"}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </>
+                )}
+
+                <TouchableOpacity
+                  activeOpacity={0.9}
+                  onPress={screen === "SignIn" ? signIn : createAccount}
+                >
+                  <LinearGradient
+                    colors={["#C9A9E8", "#A98BD4", "#F0C3B0"]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.primaryButton}
+                  >
+                    <Text style={styles.primaryText}>
+                      {screen === "SignIn" ? "SIGN IN" : "CREATE MY ACCOUNT"}
+                    </Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity onPress={() => setScreen("Welcome")}>
+                <Text style={styles.back}>← Back to Welcome</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F9F6FC",
-  },
-  center: {
-    flex: 1,
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: {
+    flexGrow: 1,
     justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 28,
+    padding: 28,
+    paddingBottom: 40,
   },
   logo: {
-    fontSize: 32,
-    fontWeight: "900",
-    letterSpacing: 7,
-    color: "#59476F",
+    fontFamily: "CormorantGaramond_700Bold",
+    fontSize: 36,
+    color: colors.ink,
     textAlign: "center",
+    letterSpacing: 4,
   },
+  logoDot: { color: colors.lavenderDeep },
   tagline: {
-    fontSize: 9,
-    letterSpacing: 2,
-    color: "#A69AB8",
-    marginTop: 10,
-    marginBottom: 30,
+    fontFamily: "DMSans_500Medium",
     textAlign: "center",
-  },
-  circle: {
-    width: 180,
-    height: 180,
-    borderRadius: 100,
-    backgroundColor: "#E8DDF5",
-    borderWidth: 2,
-    borderColor: "#C9B8E1",
-    justifyContent: "center",
-    alignItems: "center",
+    color: colors.muted,
+    fontSize: 10,
+    letterSpacing: 2,
+    marginTop: 8,
     marginBottom: 28,
   },
-  heart: {
-    fontSize: 105,
-    color: "#A58AC8",
+  heroArt: { alignItems: "center", marginBottom: 28 },
+  outerCircle: {
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    alignItems: "center",
+    justifyContent: "center",
   },
+  innerCircle: {
+    width: 132,
+    height: 132,
+    borderRadius: 66,
+    backgroundColor: "rgba(255,255,255,0.72)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  heart: { fontSize: 72, color: colors.lavenderDeep },
   title: {
-    fontSize: 29,
-    fontWeight: "600",
-    color: "#554467",
+    fontFamily: "CormorantGaramond_600SemiBold",
+    fontSize: 30,
+    color: colors.ink,
+    textAlign: "center",
   },
-  purpleTitle: {
-    fontSize: 38,
-    fontWeight: "900",
-    color: "#A78ACD",
-    letterSpacing: 3,
+  titleAccent: {
+    fontFamily: "CormorantGaramond_700Bold",
+    fontSize: 40,
+    color: colors.lavenderDeep,
+    textAlign: "center",
+    marginTop: 2,
   },
   description: {
+    fontFamily: "DMSans_400Regular",
     textAlign: "center",
     fontSize: 14,
-    color: "#897F94",
-    lineHeight: 23,
-    marginTop: 15,
-    marginBottom: 25,
+    color: colors.muted,
+    lineHeight: 22,
+    marginTop: 14,
+    marginBottom: 28,
   },
   primaryButton: {
-    backgroundColor: "#B59AD8",
     padding: 18,
-    borderRadius: 17,
+    borderRadius: radii.md,
     alignItems: "center",
-    marginTop: 18,
-    width: "100%",
   },
   primaryText: {
-    color: "#FFFFFF",
-    fontWeight: "900",
+    color: colors.white,
+    fontFamily: "DMSans_700Bold",
     fontSize: 12,
-    letterSpacing: 2,
+    letterSpacing: 1.5,
   },
-  link: {
+  secondaryButton: {
+    backgroundColor: colors.white,
+    borderWidth: 1.5,
+    borderColor: "#DCCDE8",
+    padding: 17,
+    borderRadius: radii.md,
+    alignItems: "center",
+    marginTop: 12,
+  },
+  secondaryText: {
     color: "#77618F",
-    fontWeight: "800",
-    fontSize: 12,
-    textAlign: "center",
-    marginTop: 22,
+    fontFamily: "DMSans_700Bold",
+    fontSize: 11,
+    letterSpacing: 1,
   },
   guest: {
-    color: "#A69AB8",
-    fontWeight: "700",
-    fontSize: 10,
-    letterSpacing: 1.5,
+    color: colors.muted,
+    fontFamily: "DMSans_500Medium",
+    fontSize: 11,
+    letterSpacing: 1.2,
     textAlign: "center",
     marginTop: 18,
   },
-  formContainer: {
-    padding: 28,
-    paddingTop: 35,
-    paddingBottom: 50,
-  },
   formTitle: {
-    fontSize: 27,
-    fontWeight: "900",
-    color: "#59476F",
-    marginTop: 25,
+    fontFamily: "CormorantGaramond_700Bold",
+    fontSize: 32,
+    color: colors.ink,
+    textAlign: "center",
   },
-  formDescription: {
-    color: "#9588A5",
-    fontSize: 14,
-    marginTop: 7,
-    marginBottom: 25,
+  formCard: {
+    backgroundColor: colors.white,
+    borderRadius: radii.lg,
+    padding: 18,
+    marginTop: 8,
   },
   label: {
-    color: "#77618F",
+    color: colors.lavenderDeep,
+    fontFamily: "DMSans_700Bold",
     fontSize: 10,
-    fontWeight: "900",
-    letterSpacing: 2,
-    marginTop: 18,
+    letterSpacing: 1.5,
+    marginTop: 10,
     marginBottom: 8,
   },
   input: {
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#DED2EC",
-    borderRadius: 15,
-    padding: 16,
+    backgroundColor: colors.bgSoft,
+    borderRadius: radii.sm,
+    padding: 15,
     fontSize: 14,
-    color: "#59476F",
+    color: colors.ink,
+    fontFamily: "DMSans_400Regular",
   },
   passwordBox: {
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#DED2EC",
-    borderRadius: 15,
+    backgroundColor: colors.bgSoft,
+    borderRadius: radii.sm,
     paddingHorizontal: 15,
     flexDirection: "row",
     alignItems: "center",
   },
   passwordInput: {
     flex: 1,
-    paddingVertical: 16,
-    color: "#59476F",
+    paddingVertical: 15,
+    color: colors.ink,
     fontSize: 14,
+    fontFamily: "DMSans_400Regular",
   },
   showText: {
-    color: "#967CB7",
+    color: colors.lavenderDeep,
     fontSize: 10,
-    fontWeight: "900",
+    fontFamily: "DMSans_700Bold",
   },
   back: {
     textAlign: "center",
-    color: "#9688A7",
-    marginTop: 25,
-    fontWeight: "700",
+    color: colors.muted,
+    marginTop: 22,
+    fontFamily: "DMSans_500Medium",
   },
 });
